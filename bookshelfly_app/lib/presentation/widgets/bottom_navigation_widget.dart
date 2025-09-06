@@ -30,9 +30,9 @@ class BottomNavigationWidget extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          Expanded(child: _buildNavItem(0, 'assets/img1.png')),
-          Expanded(child: _buildNavItem(1, 'assets/img2.png')),
-          Expanded(child: _buildNavItem(2, 'assets/img3.png')),
+          Expanded(child: _buildNavItem(0, 'assets/img1.png')), // Home
+          Expanded(child: _buildNavItem(1, 'assets/img2.png')), // Buscar
+          Expanded(child: _buildNavItem(2, 'assets/img3.png')), // Esportes
         ],
       ),
     );
