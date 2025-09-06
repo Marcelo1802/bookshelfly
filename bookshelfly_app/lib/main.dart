@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'core/constants/app_colors.dart';
 import 'core/di/injection_container.dart';
 import 'presentation/viewmodels/books_viewmodel.dart';
-import 'presentation/pages/books_page.dart';
+import 'presentation/pages/main_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -45,7 +45,7 @@ class BookShelflyApp extends StatelessWidget {
             foregroundColor: AppColors.white,
           ),
         ),
-        home: const BooksPage(),
+        home: const MainPage(),
       ),
     );
   }
