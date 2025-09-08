@@ -42,12 +42,26 @@ class BookPaginator {
     while (currentIndex < text.length) {
       int endIndex = currentIndex + charactersPerPage;
       
-      // Se não é a última página, tentar quebrar em uma palavra completa
+      // Se não é a última página, tentar quebrar após um ponto final
       if (endIndex < text.length) {
-        // Procurar pelo último espaço antes do limite
-        int lastSpaceIndex = text.lastIndexOf(' ', endIndex);
-        if (lastSpaceIndex > currentIndex) {
-          endIndex = lastSpaceIndex;
+        // Procurar pelo último ponto final antes do limite
+        int lastPeriodIndex = text.lastIndexOf('.', endIndex);
+        
+        // Se encontrou um ponto final, usar ele
+        if (lastPeriodIndex > currentIndex) {
+          endIndex = lastPeriodIndex + 1; // Incluir o ponto final
+        } else {
+          // Se não encontrou ponto final, procurar por outros sinais de pontuação
+          int lastPunctuationIndex = _findLastPunctuation(text, endIndex);
+          if (lastPunctuationIndex > currentIndex) {
+            endIndex = lastPunctuationIndex + 1;
+          } else {
+            // Como último recurso, quebrar em uma palavra completa
+            int lastSpaceIndex = text.lastIndexOf(' ', endIndex);
+            if (lastSpaceIndex > currentIndex) {
+              endIndex = lastSpaceIndex;
+            }
+          }
         }
       } else {
         endIndex = text.length;
@@ -74,6 +88,30 @@ class BookPaginator {
     }
     
     return pages;
+  }
+  
+  // Método auxiliar para encontrar a última pontuação antes de um índice
+  static int _findLastPunctuation(String text, int endIndex) {
+    final punctuationMarks = ['.', '!', '?', ';', ':'];
+    int lastPunctuationIndex = -1;
+    
+    for (int i = endIndex - 1; i >= 0; i--) {
+      if (punctuationMarks.contains(text[i])) {
+        lastPunctuationIndex = i;
+        break;
+      }
+    }
+    
+    return lastPunctuationIndex;
+  }
+  
+  // Método para verificar se uma página termina com ponto final
+  static bool endsWithPeriod(String content) {
+    final trimmedContent = content.trim();
+    if (trimmedContent.isEmpty) return false;
+    
+    final lastChar = trimmedContent[trimmedContent.length - 1];
+    return lastChar == '.';
   }
   
   static int calculateTotalPages(

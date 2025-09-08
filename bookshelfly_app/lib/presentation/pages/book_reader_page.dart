@@ -187,6 +187,15 @@ class _BookReaderPageState extends State<BookReaderPage> {
 
   void _goToNextPage() {
     if (_currentPage < _totalPages - 1) {
+      // Verificar se a página atual termina com ponto final
+      if (_currentPage < _pages.length) {
+        final currentPageContent = _pages[_currentPage].content;
+        if (!BookPaginator.endsWithPeriod(currentPageContent)) {
+          _showNavigationWarning();
+          return;
+        }
+      }
+      
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
@@ -316,6 +325,7 @@ class _BookReaderPageState extends State<BookReaderPage> {
             controller: _pageController,
             onPageChanged: _onPageChanged,
             itemCount: _pages.length,
+            physics: _canNavigateToNext() ? const ClampingScrollPhysics() : const NeverScrollableScrollPhysics(),
             itemBuilder: (context, index) {
               final page = _pages[index];
               return Container(
@@ -376,6 +386,29 @@ class _BookReaderPageState extends State<BookReaderPage> {
     _saveReadingProgress();
   }
 
+  void _showNavigationWarning() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text(
+          'Termine de ler a página atual antes de prosseguir',
+          style: TextStyle(color: AppColors.white),
+        ),
+        backgroundColor: AppColors.error,
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+      ),
+    );
+  }
+
+  bool _canNavigateToNext() {
+    if (_currentPage >= _pages.length) return false;
+    final currentPageContent = _pages[_currentPage].content;
+    return BookPaginator.endsWithPeriod(currentPageContent);
+  }
+
   Widget _buildPageControls() {
     if (_totalPages <= 1) return const SizedBox.shrink();
     
@@ -407,9 +440,9 @@ class _BookReaderPageState extends State<BookReaderPage> {
             ),
           ),
           IconButton(
-            onPressed: _currentPage < _totalPages - 1 ? _goToNextPage : null,
+            onPressed: (_currentPage < _totalPages - 1 && _canNavigateToNext()) ? _goToNextPage : null,
             icon: const Icon(Icons.chevron_right),
-            color: _currentPage < _totalPages - 1 ? _textColor : AppColors.grey,
+            color: (_currentPage < _totalPages - 1 && _canNavigateToNext()) ? _textColor : AppColors.grey,
           ),
         ],
       ),
