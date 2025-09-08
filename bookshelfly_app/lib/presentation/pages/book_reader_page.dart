@@ -366,10 +366,8 @@ class _BookReaderPageState extends State<BookReaderPage> {
             _textColor = isDarkMode ? AppColors.white : AppColors.black;
           });
           
-          // Repaginar o conteúdo com as novas configurações
-          if (_content.isNotEmpty) {
-            _paginateContent(_content);
-          }
+          // Não repaginar - as páginas permanecem fixas
+          // Apenas as configurações de exibição são aplicadas
           
           _saveReadingProgress();
         },

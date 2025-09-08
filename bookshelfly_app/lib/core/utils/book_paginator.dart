@@ -25,14 +25,18 @@ class BookPaginator {
   }) {
     final List<BookPage> pages = [];
     
+    // Usar configurações fixas para garantir número consistente de páginas
+    const double baseFontSize = 18.0;
+    const double baseLineHeight = 1.5;
+    
     // Obter dimensões da tela
     final screenSize = MediaQuery.of(context).size;
     final availableWidth = screenSize.width - horizontalPadding;
     final availableHeight = screenSize.height - verticalPadding - kToolbarHeight - MediaQuery.of(context).padding.top - MediaQuery.of(context).padding.bottom;
     
-    // Calcular caracteres por linha e linhas por página
-    final charactersPerLine = (availableWidth / (fontSize * 0.6)).round(); // Aproximação baseada no tamanho da fonte
-    final linesPerPage = (availableHeight / (fontSize * lineHeight)).round();
+    // Calcular caracteres por linha e linhas por página usando configurações base
+    final charactersPerLine = (availableWidth / (baseFontSize * 0.6)).round();
+    final linesPerPage = (availableHeight / (baseFontSize * baseLineHeight)).round();
     final charactersPerPage = charactersPerLine * linesPerPage;
     
     // Dividir o texto em páginas
@@ -122,10 +126,11 @@ class BookPaginator {
     double horizontalPadding = 32.0,
     double verticalPadding = 32.0,
   }) {
+    // Usar configurações fixas para garantir número consistente de páginas
     final pages = paginateText(
       text,
       context,
-      fontSize: fontSize,
+      fontSize: fontSize, // Parâmetros mantidos para compatibilidade, mas não usados
       lineHeight: lineHeight,
       horizontalPadding: horizontalPadding,
       verticalPadding: verticalPadding,
