@@ -255,10 +255,7 @@ class _BookReaderPageState extends State<BookReaderPage> {
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: _showReadingSettings,
-          ),
-          IconButton(
-            icon: Icon(_isDarkMode ? Icons.light_mode : Icons.dark_mode),
-            onPressed: _toggleDarkMode,
+            tooltip: 'Configurações',
           ),
         ],
       ),
@@ -401,6 +398,123 @@ class _BookReaderPageState extends State<BookReaderPage> {
     );
   }
 
+  void _showQuickNavigationDialog() {
+    final TextEditingController pageController = TextEditingController(
+      text: (_currentPage + 1).toString(),
+    );
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Navegação Rápida'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Digite o número da página (1 - $_totalPages)',
+              style: TextStyle(
+                color: _textColor,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: pageController,
+              keyboardType: TextInputType.number,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: _textColor,
+              ),
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                hintText: 'Ex: 90',
+                hintStyle: TextStyle(
+                  color: _textColor.withOpacity(0.6),
+                ),
+              ),
+              onSubmitted: (value) {
+                _navigateToPage(value, pageController);
+              },
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                TextButton(
+                  onPressed: () => _navigateToPage('1', pageController),
+                  child: const Text('Primeira'),
+                ),
+                TextButton(
+                  onPressed: () => _navigateToPage(_totalPages.toString(), pageController),
+                  child: const Text('Última'),
+                ),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () => _navigateToPage(pageController.text, pageController),
+            child: const Text('Ir'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _navigateToPage(String pageText, TextEditingController controller) {
+    final pageNumber = int.tryParse(pageText);
+    
+    if (pageNumber == null || pageNumber < 1 || pageNumber > _totalPages) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Digite um número válido entre 1 e $_totalPages',
+            style: const TextStyle(color: AppColors.white),
+          ),
+          backgroundColor: AppColors.error,
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+      );
+      return;
+    }
+
+    final targetPage = pageNumber - 1; // Converter para índice baseado em 0
+    
+    // Verificar se a página atual termina com ponto final (se não for a primeira página)
+    if (targetPage > _currentPage && _currentPage < _pages.length) {
+      final currentPageContent = _pages[_currentPage].content;
+      if (!BookPaginator.endsWithPeriod(currentPageContent)) {
+        _showNavigationWarning();
+        return;
+      }
+    }
+
+    Navigator.of(context).pop();
+    
+    _pageController.animateToPage(
+      targetPage,
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+    );
+  }
+
   bool _canNavigateToNext() {
     if (_currentPage >= _pages.length) return false;
     final currentPageContent = _pages[_currentPage].content;
@@ -411,38 +525,111 @@ class _BookReaderPageState extends State<BookReaderPage> {
     if (_totalPages <= 1) return const SizedBox.shrink();
     
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       decoration: BoxDecoration(
         color: _isDarkMode ? AppColors.greyDark : AppColors.white,
-        border: Border(
-          top: BorderSide(
-            color: _isDarkMode ? AppColors.grey : AppColors.greyLight,
-            width: 1,
+        borderRadius: BorderRadius.circular(25),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
           ),
+        ],
+        border: Border.all(
+          color: _isDarkMode ? AppColors.grey : AppColors.greyLight,
+          width: 1,
         ),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          IconButton(
+          // Botão Página Anterior
+          _buildMenuButton(
+            icon: Icons.chevron_left,
             onPressed: _currentPage > 0 ? _goToPreviousPage : null,
-            icon: const Icon(Icons.chevron_left),
-            color: _currentPage > 0 ? _textColor : AppColors.grey,
+            isEnabled: _currentPage > 0,
           ),
-          Text(
-            '${_currentPage + 1} / $_totalPages',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: _textColor,
+          
+          // Indicador de Página (Navegação Rápida)
+          GestureDetector(
+            onTap: _showQuickNavigationDialog,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: _isDarkMode ? AppColors.grey : AppColors.greyLight,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: _textColor.withOpacity(0.2),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '${_currentPage + 1}',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: _textColor,
+                    ),
+                  ),
+                  Text(
+                    ' / $_totalPages',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: _textColor.withOpacity(0.7),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(
+                    Icons.navigation,
+                    size: 16,
+                    color: _textColor.withOpacity(0.7),
+                  ),
+                ],
+              ),
             ),
           ),
-          IconButton(
+          
+          // Botão Página Seguinte
+          _buildMenuButton(
+            icon: Icons.chevron_right,
             onPressed: (_currentPage < _totalPages - 1 && _canNavigateToNext()) ? _goToNextPage : null,
-            icon: const Icon(Icons.chevron_right),
-            color: (_currentPage < _totalPages - 1 && _canNavigateToNext()) ? _textColor : AppColors.grey,
+            isEnabled: (_currentPage < _totalPages - 1 && _canNavigateToNext()),
           ),
         ],
+      ),
+    );
+  }
+
+
+  Widget _buildMenuButton({
+    required IconData icon,
+    required VoidCallback? onPressed,
+    required bool isEnabled,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isEnabled 
+            ? (_isDarkMode ? AppColors.grey : AppColors.greyLight)
+            : Colors.transparent,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: IconButton(
+        onPressed: onPressed,
+        icon: Icon(
+          icon,
+          color: isEnabled ? _textColor : AppColors.grey,
+          size: 24,
+        ),
+        padding: const EdgeInsets.all(8),
+        constraints: const BoxConstraints(
+          minWidth: 40,
+          minHeight: 40,
+        ),
       ),
     );
   }
