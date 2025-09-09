@@ -405,71 +405,299 @@ class _BookReaderPageState extends State<BookReaderPage> {
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Navegação Rápida'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Digite o número da página (1 - $_totalPages)',
-              style: TextStyle(
-                color: _textColor,
-                fontSize: 14,
+      barrierDismissible: true,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          margin: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: _backgroundColor,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
               ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: pageController,
-              keyboardType: TextInputType.number,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: _textColor,
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Header com gradiente
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: _isDarkMode 
+                      ? const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [AppColors.greyDark, AppColors.grey],
+                        )
+                      : AppColors.appBarGradient,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.navigation,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Navegação Rápida',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            'Página ${_currentPage + 1} de $_totalPages',
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(
+                        Icons.close,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                hintText: 'Ex: 90',
-                hintStyle: TextStyle(
-                  color: _textColor.withOpacity(0.6),
+              
+              // Conteúdo principal
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  children: [
+                    // Texto explicativo
+                    Text(
+                      'Digite a página para navegar',
+                      style: TextStyle(
+                        color: _textColor,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // Campo de entrada estilizado
+                    Container(
+                      constraints: const BoxConstraints(
+                        maxWidth: 200,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _isDarkMode ? AppColors.greyDark : AppColors.greyLight,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: _textColor.withOpacity(0.1),
+                          width: 1,
+                        ),
+                      ),
+                      child: TextField(
+                        controller: pageController,
+                        keyboardType: TextInputType.number,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: _textColor,
+                        ),
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
+                          hintText: 'Ex: 90',
+                          hintStyle: TextStyle(
+                            color: _textColor.withOpacity(0.5),
+                            fontSize: 16,
+                            fontWeight: FontWeight.normal,
+                          ),
+                          prefixIcon: Icon(
+                            Icons.bookmark,
+                            color: _textColor.withOpacity(0.6),
+                            size: 20,
+                          ),
+                        ),
+                        onSubmitted: (value) {
+                          _navigateToPage(value, pageController);
+                        },
+                      ),
+                    ),
+                    
+                    const SizedBox(height: 24),
+                    
+                    // Botões de navegação rápida
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildQuickNavButton(
+                            icon: Icons.first_page,
+                            label: 'Primeira',
+                            onPressed: () => _navigateToPage('1', pageController),
+                            isPrimary: false,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildQuickNavButton(
+                            icon: Icons.last_page,
+                            label: 'Última',
+                            onPressed: () => _navigateToPage(_totalPages.toString(), pageController),
+                            isPrimary: false,
+                          ),
+                        ),
+                      ],
+                    ),
+                    
+                    const SizedBox(height: 24),
+                    
+                    // Botões de ação
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildActionButton(
+                            label: 'Cancelar',
+                            onPressed: () => Navigator.of(context).pop(),
+                            isPrimary: false,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildActionButton(
+                            label: 'Ir para Página',
+                            onPressed: () => _navigateToPage(pageController.text, pageController),
+                            isPrimary: true,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-              onSubmitted: (value) {
-                _navigateToPage(value, pageController);
-              },
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickNavButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onPressed,
+    required bool isPrimary,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isPrimary 
+            ? (_isDarkMode ? AppColors.grey : AppColors.greyLight)
+            : Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: _textColor.withOpacity(0.2),
+          width: 1,
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                TextButton(
-                  onPressed: () => _navigateToPage('1', pageController),
-                  child: const Text('Primeira'),
+                Icon(
+                  icon,
+                  color: _textColor,
+                  size: 20,
                 ),
-                TextButton(
-                  onPressed: () => _navigateToPage(_totalPages.toString(), pageController),
-                  child: const Text('Última'),
+                const SizedBox(width: 8),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: _textColor,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ],
             ),
-          ],
+          ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancelar'),
+      ),
+    );
+  }
+
+  Widget _buildActionButton({
+    required String label,
+    required VoidCallback onPressed,
+    required bool isPrimary,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: isPrimary 
+            ? (_isDarkMode 
+                ? const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [AppColors.greyDark, AppColors.grey],
+                  )
+                : AppColors.appBarGradient)
+            : null,
+        color: isPrimary ? null : Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        border: isPrimary ? null : Border.all(
+          color: _textColor.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+            child: Text(
+              label,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: isPrimary ? Colors.white : _textColor,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
-          ElevatedButton(
-            onPressed: () => _navigateToPage(pageController.text, pageController),
-            child: const Text('Ir'),
-          ),
-        ],
+        ),
       ),
     );
   }
