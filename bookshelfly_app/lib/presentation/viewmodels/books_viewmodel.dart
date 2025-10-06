@@ -3,28 +3,35 @@ import '../../domain/entities/gutendex_book.dart';
 import '../../domain/usecases/get_all_books.dart';
 import '../../domain/usecases/add_book.dart';
 import '../../domain/usecases/get_book_by_id.dart';
+import '../../domain/usecases/get_featured_books.dart';
 import '../../core/errors/failures.dart';
 
 class BooksViewModel extends ChangeNotifier {
   final GetBooks getBooks;
   final SearchBooks searchBooks;
   final GetBookById getBookById;
+  final GetFeaturedBooks getFeaturedBooks;
 
   BooksViewModel({
     required this.getBooks,
     required this.searchBooks,
     required this.getBookById,
+    required this.getFeaturedBooks,
   });
 
   List<GutendexBook> _books = [];
+  List<GutendexBook> _featuredBooks = [];
   bool _isLoading = false;
+  bool _isLoadingFeatured = false;
   String? _error;
   String _searchQuery = '';
   int _currentPage = 1;
   bool _hasMoreBooks = true;
 
   List<GutendexBook> get books => _books;
+  List<GutendexBook> get featuredBooks => _featuredBooks;
   bool get isLoading => _isLoading;
+  bool get isLoadingFeatured => _isLoadingFeatured;
   String? get error => _error;
   String get searchQuery => _searchQuery;
   bool get hasMoreBooks => _hasMoreBooks;
@@ -62,6 +69,22 @@ class BooksViewModel extends ChangeNotifier {
     );
 
     _setLoading(false);
+  }
+
+  Future<void> loadFeaturedBooks() async {
+    _setLoadingFeatured(true);
+    _clearError();
+
+    final result = await getFeaturedBooks();
+    result.fold(
+      (failure) => _setError(_mapFailureToMessage(failure)),
+      (featuredBooks) {
+        _featuredBooks = featuredBooks;
+        notifyListeners();
+      },
+    );
+
+    _setLoadingFeatured(false);
   }
 
   Future<void> performSearch(String query) async {
@@ -120,6 +143,11 @@ class BooksViewModel extends ChangeNotifier {
 
   void _setLoading(bool loading) {
     _isLoading = loading;
+    notifyListeners();
+  }
+
+  void _setLoadingFeatured(bool loading) {
+    _isLoadingFeatured = loading;
     notifyListeners();
   }
 

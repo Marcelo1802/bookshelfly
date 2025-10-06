@@ -152,10 +152,17 @@ class _BooksPageState extends State<BooksPage> {
   }
 }
 
-class BookDetailsSheet extends StatelessWidget {
+class BookDetailsSheet extends StatefulWidget {
   final GutendexBook book;
 
   const BookDetailsSheet({super.key, required this.book});
+
+  @override
+  State<BookDetailsSheet> createState() => _BookDetailsSheetState();
+}
+
+class _BookDetailsSheetState extends State<BookDetailsSheet> {
+  bool _isFavorited = false;
 
   @override
   Widget build(BuildContext context) {
@@ -185,11 +192,11 @@ class BookDetailsSheet extends StatelessWidget {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (book.coverImageUrl != null)
+                      if (widget.book.coverImageUrl != null)
                         ClipRRect(
                           borderRadius: BorderRadius.circular(8),
                           child: Image.network(
-                            book.coverImageUrl!,
+                            widget.book.coverImageUrl!,
                             width: 120,
                             height: 180,
                             fit: BoxFit.cover,
@@ -230,7 +237,7 @@ class BookDetailsSheet extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              book.title,
+                              widget.book.title,
                               style: const TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
@@ -239,7 +246,7 @@ class BookDetailsSheet extends StatelessWidget {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              book.authorsNames,
+                              widget.book.authorsNames,
                               style: TextStyle(
                                 fontSize: 16,
                                 color: AppColors.greyDark,
@@ -255,7 +262,7 @@ class BookDetailsSheet extends StatelessWidget {
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
-                                  '${book.downloadCount} downloads',
+                                  '${widget.book.downloadCount} downloads',
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: AppColors.grey,
@@ -269,7 +276,13 @@ class BookDetailsSheet extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 24),
-                  if (book.subjects.isNotEmpty) ...[
+                  if (widget.book.subjects.isNotEmpty) ...[
+                    // Linha divisória acima
+                    Container(
+                      height: 2,
+                      color: AppColors.grey,
+                      margin: const EdgeInsets.symmetric(vertical: 16),
+                    ),
                     const Text(
                       'Assuntos:',
                       style: TextStyle(
@@ -280,15 +293,20 @@ class BookDetailsSheet extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      book.subjectsText,
+                      widget.book.subjectsText,
                       style: TextStyle(
                         fontSize: 14,
                         color: AppColors.greyDark,
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    // Linha divisória abaixo
+                    Container(
+                      height: 2,
+                      color: AppColors.grey,
+                      margin: const EdgeInsets.symmetric(vertical: 16),
+                    ),
                   ],
-                  if (book.languages.isNotEmpty) ...[
+                  if (widget.book.languages.isNotEmpty) ...[
                     const Text(
                       'Idiomas:',
                       style: TextStyle(
@@ -299,57 +317,114 @@ class BookDetailsSheet extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      book.languagesText,
+                      widget.book.languagesText,
                       style: TextStyle(
                         fontSize: 14,
                         color: AppColors.greyDark,
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    // Linha divisória abaixo
+                    Container(
+                      height: 2,
+                      color: AppColors.grey,
+                      margin: const EdgeInsets.symmetric(vertical: 16),
+                    ),
                   ],
                   
-                  // Botão de leitura
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: book.hasReadableText 
-                          ? () => _openBookReader(context, book)
-                          : () => _showNoTextAvailable(context),
-                      icon: const Icon(Icons.menu_book),
-                      label: Text(book.hasReadableText ? 'Ler Livro' : 'Texto Não Disponível'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: book.hasReadableText 
-                            ? AppColors.primary 
-                            : AppColors.grey,
-                        foregroundColor: AppColors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
+                  // Botões de ação
+                  Row(
+                    children: [
+                      // Botão Ler Livro
+                      Expanded(
+                        child: Container(
+                          height: 50,
+                          decoration: BoxDecoration(
+                            gradient: widget.book.hasReadableText 
+                                ? AppColors.primaryGradient
+                                : LinearGradient(
+                                    colors: [AppColors.grey, AppColors.grey],
+                                  ),
+                            borderRadius: BorderRadius.circular(25),
+                            boxShadow: widget.book.hasReadableText ? [
+                              BoxShadow(
+                                color: AppColors.primary.withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ] : null,
+                          ),
+                          child: ElevatedButton.icon(
+                            onPressed: widget.book.hasReadableText 
+                                ? () => _openBookReader(context, widget.book)
+                                : () => _showNoTextAvailable(context),
+                            icon: Icon(
+                              widget.book.hasReadableText ? Icons.auto_stories : Icons.block,
+                              size: 20,
+                            ),
+                            label: Text(
+                              widget.book.hasReadableText ? 'Ler Livro' : 'Texto Não Disponível',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.transparent,
+                              foregroundColor: AppColors.white,
+                              shadowColor: Colors.transparent,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(25),
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Formatos Disponíveis:',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.black,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      if (book.epubUrl != null)
-                        _buildFormatChip('EPUB', book.epubUrl!),
-                      if (book.pdfUrl != null)
-                        _buildFormatChip('PDF', book.pdfUrl!),
-                      if (book.textUrl != null)
-                        _buildFormatChip('TXT', book.textUrl!),
+                      const SizedBox(width: 12),
+                      // Botão Favoritar
+                      Expanded(
+                        child: Container(
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: _isFavorited ? Colors.red : AppColors.white,
+                            borderRadius: BorderRadius.circular(25),
+                            border: Border.all(
+                              color: Colors.red,
+                              width: 2,
+                            ),
+                            boxShadow: _isFavorited ? [
+                              BoxShadow(
+                                color: Colors.red.withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ] : null,
+                          ),
+                          child: ElevatedButton.icon(
+                            onPressed: () => _toggleFavorite(context, widget.book),
+                            icon: Icon(
+                              _isFavorited ? Icons.favorite : Icons.favorite_border,
+                              size: 20,
+                            ),
+                            label: Text(
+                              _isFavorited ? 'Favoritado' : 'Favoritar',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.transparent,
+                              foregroundColor: _isFavorited ? AppColors.white : Colors.red,
+                              shadowColor: Colors.transparent,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(25),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ],
@@ -361,28 +436,6 @@ class BookDetailsSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildFormatChip(String label, String url) {
-    return InkWell(
-      onTap: () {
-        // TODO: Implementar download ou abertura do arquivo
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          gradient: AppColors.primaryGradient,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Text(
-          label,
-          style: const TextStyle(
-            color: AppColors.white,
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
-    );
-  }
 
   void _openBookReader(BuildContext context, GutendexBook book) {
     Navigator.of(context).push(
@@ -398,6 +451,22 @@ class BookDetailsSheet extends StatelessWidget {
         content: Text('Texto deste livro não está disponível para leitura online.'),
         backgroundColor: AppColors.grey,
         duration: Duration(seconds: 3),
+      ),
+    );
+  }
+
+  void _toggleFavorite(BuildContext context, GutendexBook book) {
+    setState(() {
+      _isFavorited = !_isFavorited;
+    });
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(_isFavorited 
+            ? '${book.title} foi adicionado aos favoritos!' 
+            : '${book.title} foi removido dos favoritos!'),
+        backgroundColor: _isFavorited ? Colors.red : AppColors.grey,
+        duration: const Duration(seconds: 2),
       ),
     );
   }

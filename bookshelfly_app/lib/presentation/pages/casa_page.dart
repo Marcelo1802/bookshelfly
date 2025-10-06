@@ -24,6 +24,11 @@ class _CasaPageState extends State<CasaPage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final viewModel = context.read<BooksViewModel>();
+      // Carregar livros em destaque primeiro (com cache)
+      if (viewModel.featuredBooks.isEmpty) {
+        viewModel.loadFeaturedBooks();
+      }
+      // Carregar todos os livros se necessário
       if (viewModel.books.isEmpty) {
         viewModel.loadBooks(refresh: true);
       }
@@ -39,7 +44,7 @@ class _CasaPageState extends State<CasaPage> {
   void _startAutoSlide(List<GutendexBook> books) {
     _timer?.cancel();
     if (books.length > 1) {
-      _featuredBooks = books.take(5).toList();
+      _featuredBooks = books;
       _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
         if (mounted) {
           setState(() {
@@ -66,16 +71,21 @@ class _CasaPageState extends State<CasaPage> {
               return _buildEmptyState();
             }
 
+            // Usar livros em destaque do cache se disponível
+            final featuredBooks = viewModel.featuredBooks.isNotEmpty 
+                ? viewModel.featuredBooks 
+                : books.take(5).toList();
+            
             // Iniciar auto slide apenas uma vez
-            if (_featuredBooks.isEmpty && books.isNotEmpty) {
+            if (_featuredBooks.isEmpty && featuredBooks.isNotEmpty) {
               WidgetsBinding.instance.addPostFrameCallback((_) {
-                _startAutoSlide(books);
+                _startAutoSlide(featuredBooks);
               });
             }
 
             return CustomScrollView(
               slivers: [
-                _buildFeaturedCard(books),
+                _buildFeaturedCard(featuredBooks),
                 _buildDivider(),
                 _buildSectionTitle('Popular'),
                 _buildHorizontalBookList(books.take(10).toList()),

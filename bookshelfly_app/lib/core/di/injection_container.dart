@@ -2,6 +2,8 @@ import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../data/datasources/gutendex_remote_datasource.dart';
+import '../../data/datasources/gutendex_local_datasource.dart';
+import '../../data/datasources/banner_cache_datasource.dart';
 import '../../data/datasources/book_content_datasource.dart';
 import '../../data/repositories/book_repository_impl.dart';
 import '../../data/repositories/book_content_repository_impl.dart';
@@ -11,6 +13,8 @@ import '../../domain/usecases/get_all_books.dart';
 import '../../domain/usecases/add_book.dart';
 import '../../domain/usecases/get_book_by_id.dart';
 import '../../domain/usecases/get_book_content.dart';
+import '../../domain/usecases/get_featured_books.dart';
+import '../../domain/usecases/clear_cache.dart';
 
 final sl = GetIt.instance;
 
@@ -26,13 +30,24 @@ Future<void> init() async {
     () => GutendexRemoteDataSourceImpl(client: sl()),
   );
   
+  sl.registerLazySingleton<GutendexLocalDataSource>(
+    () => GutendexLocalDataSourceImpl(sharedPreferences: sl()),
+  );
+  
+  sl.registerLazySingleton<BannerCacheDataSource>(
+    () => BannerCacheDataSourceImpl(sharedPreferences: sl()),
+  );
+  
   sl.registerLazySingleton<BookContentDataSource>(
     () => BookContentDataSourceImpl(client: sl()),
   );
 
   // Repository
   sl.registerLazySingleton<BookRepository>(
-    () => BookRepositoryImpl(remoteDataSource: sl()),
+    () => BookRepositoryImpl(
+      remoteDataSource: sl(),
+      localDataSource: sl(),
+    ),
   );
   
   sl.registerLazySingleton<BookContentRepository>(
@@ -44,4 +59,6 @@ Future<void> init() async {
   sl.registerLazySingleton(() => SearchBooks(sl()));
   sl.registerLazySingleton(() => GetBookById(sl()));
   sl.registerLazySingleton(() => GetBookContent(sl()));
+  sl.registerLazySingleton(() => GetFeaturedBooks(sl()));
+  sl.registerLazySingleton(() => ClearCache(sl()));
 }
