@@ -3,6 +3,7 @@ import '../widgets/bottom_navigation_widget.dart';
 import 'casa_page.dart';
 import 'books_page.dart';
 import 'esportes_page.dart';
+import 'glass_page.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -18,6 +19,7 @@ class _MainPageState extends State<MainPage> {
     const CasaPage(), // Home estilo Netflix para livros
     const BooksPage(), // Buscar livros
     const EsportesPage(),
+    const GlassPage(), // Glass
   ];
 
   @override

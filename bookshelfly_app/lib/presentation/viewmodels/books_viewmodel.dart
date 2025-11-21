@@ -4,6 +4,8 @@ import '../../domain/usecases/get_all_books.dart';
 import '../../domain/usecases/add_book.dart';
 import '../../domain/usecases/get_book_by_id.dart';
 import '../../domain/usecases/get_featured_books.dart';
+import '../../domain/usecases/get_brazilian_books.dart';
+import '../../domain/repositories/banner_repository.dart';
 import '../../core/errors/failures.dart';
 
 class BooksViewModel extends ChangeNotifier {
@@ -11,18 +13,24 @@ class BooksViewModel extends ChangeNotifier {
   final SearchBooks searchBooks;
   final GetBookById getBookById;
   final GetFeaturedBooks getFeaturedBooks;
+  final GetBrazilianBooks getBrazilianBooks;
+  final BannerRepository bannerRepository;
 
   BooksViewModel({
     required this.getBooks,
     required this.searchBooks,
     required this.getBookById,
     required this.getFeaturedBooks,
+    required this.getBrazilianBooks,
+    required this.bannerRepository,
   });
 
   List<GutendexBook> _books = [];
   List<GutendexBook> _featuredBooks = [];
+  List<GutendexBook> _brazilianBooks = [];
   bool _isLoading = false;
   bool _isLoadingFeatured = false;
+  bool _isLoadingBrazilian = false;
   String? _error;
   String _searchQuery = '';
   int _currentPage = 1;
@@ -30,8 +38,10 @@ class BooksViewModel extends ChangeNotifier {
 
   List<GutendexBook> get books => _books;
   List<GutendexBook> get featuredBooks => _featuredBooks;
+  List<GutendexBook> get brazilianBooks => _brazilianBooks;
   bool get isLoading => _isLoading;
   bool get isLoadingFeatured => _isLoadingFeatured;
+  bool get isLoadingBrazilian => _isLoadingBrazilian;
   String? get error => _error;
   String get searchQuery => _searchQuery;
   bool get hasMoreBooks => _hasMoreBooks;
@@ -71,6 +81,19 @@ class BooksViewModel extends ChangeNotifier {
     _setLoading(false);
   }
 
+  Future<void> loadCachedFeaturedBooksImmediate() async {
+    // Carregar cache imediatamente para exibição instantânea
+    try {
+      final cachedBooks = await bannerRepository.getCachedFeaturedBooksImmediate();
+      if (cachedBooks.isNotEmpty) {
+        _featuredBooks = cachedBooks;
+        notifyListeners();
+      }
+    } catch (e) {
+      // Ignorar erros silenciosamente
+    }
+  }
+
   Future<void> loadFeaturedBooks() async {
     _setLoadingFeatured(true);
     _clearError();
@@ -85,6 +108,22 @@ class BooksViewModel extends ChangeNotifier {
     );
 
     _setLoadingFeatured(false);
+  }
+
+  Future<void> loadBrazilianBooks() async {
+    _setLoadingBrazilian(true);
+    _clearError();
+
+    final result = await getBrazilianBooks();
+    result.fold(
+      (failure) => _setError(_mapFailureToMessage(failure)),
+      (brazilianBooks) {
+        _brazilianBooks = brazilianBooks;
+        notifyListeners();
+      },
+    );
+
+    _setLoadingBrazilian(false);
   }
 
   Future<void> performSearch(String query) async {
@@ -148,6 +187,11 @@ class BooksViewModel extends ChangeNotifier {
 
   void _setLoadingFeatured(bool loading) {
     _isLoadingFeatured = loading;
+    notifyListeners();
+  }
+
+  void _setLoadingBrazilian(bool loading) {
+    _isLoadingBrazilian = loading;
     notifyListeners();
   }
 

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
@@ -14,19 +15,38 @@ class CasaPage extends StatefulWidget {
   State<CasaPage> createState() => _CasaPageState();
 }
 
-class _CasaPageState extends State<CasaPage> {
+class _CasaPageState extends State<CasaPage> with SingleTickerProviderStateMixin {
   Timer? _timer;
   int _currentFeaturedIndex = 0;
   List<GutendexBook> _featuredBooks = [];
+  late AnimationController _borderAnimationController;
 
   @override
   void initState() {
     super.initState();
+    _borderAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat();
+    
+    // Carregar cache imediatamente para exibição instantânea (sem esperar postFrameCallback)
+    Future.microtask(() {
+      if (mounted) {
+        final viewModel = context.read<BooksViewModel>();
+        // Carregar cache do banner imediatamente (mesmo que expirado)
+        viewModel.loadCachedFeaturedBooksImmediate();
+      }
+    });
+    
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final viewModel = context.read<BooksViewModel>();
-      // Carregar livros em destaque primeiro (com cache)
+      // Depois carregar dados atualizados em background
       if (viewModel.featuredBooks.isEmpty) {
         viewModel.loadFeaturedBooks();
+      }
+      // Carregar livros brasileiros
+      if (viewModel.brazilianBooks.isEmpty) {
+        viewModel.loadBrazilianBooks();
       }
       // Carregar todos os livros se necessário
       if (viewModel.books.isEmpty) {
@@ -38,6 +58,7 @@ class _CasaPageState extends State<CasaPage> {
   @override
   void dispose() {
     _timer?.cancel();
+    _borderAnimationController.dispose();
     super.dispose();
   }
 
@@ -87,6 +108,12 @@ class _CasaPageState extends State<CasaPage> {
               slivers: [
                 _buildFeaturedCard(featuredBooks),
                 _buildDivider(),
+                // Seção Brasileiros
+                if (viewModel.brazilianBooks.isNotEmpty) ...[
+                  _buildSectionTitle('🇧🇷 Brasileiros'),
+                  _buildHorizontalBookList(viewModel.brazilianBooks),
+                  _buildDivider(),
+                ],
                 _buildSectionTitle('Popular'),
                 _buildHorizontalBookList(books.take(10).toList()),
                 _buildDivider(),
@@ -155,27 +182,63 @@ class _CasaPageState extends State<CasaPage> {
                   const SizedBox(height: 16),
                   Row(
                     children: [
-                      ElevatedButton.icon(
-                        onPressed: currentBook.hasReadableText
-                            ? () => _openBookReader(currentBook)
-                            : null,
-                        icon: const Icon(Icons.menu_book, size: 18),
-                        label: const Text('Ler'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: currentBook.hasReadableText 
-                              ? AppColors.white 
-                              : AppColors.grey,
-                          foregroundColor: currentBook.hasReadableText 
-                              ? AppColors.black 
-                              : AppColors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24, 
-                            vertical: 12
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
+                      AnimatedBuilder(
+                        animation: _borderAnimationController,
+                        builder: (context, child) {
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: currentBook.hasReadableText 
+                                  ? Colors.red 
+                                  : AppColors.grey,
+                              borderRadius: BorderRadius.circular(12),
+                              border: currentBook.hasReadableText
+                                  ? Border.all(
+                                      color: _getAnimatedBorderColor(),
+                                      width: 2.5,
+                                    )
+                                  : null,
+                              boxShadow: currentBook.hasReadableText ? [
+                                BoxShadow(
+                                  color: Colors.red.withOpacity(0.5),
+                                  blurRadius: 20,
+                                  spreadRadius: 2,
+                                  offset: const Offset(0, 4),
+                                ),
+                                BoxShadow(
+                                  color: Colors.red.withOpacity(0.3),
+                                  blurRadius: 10,
+                                  spreadRadius: 1,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ] : null,
+                            ),
+                            child: ElevatedButton(
+                              onPressed: currentBook.hasReadableText
+                                  ? () => _openBookReader(currentBook)
+                                  : null,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.transparent,
+                                foregroundColor: AppColors.white,
+                                shadowColor: Colors.transparent,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 32, 
+                                  vertical: 14
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: const Text(
+                                'Ler',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
                       ),
                       const SizedBox(width: 12),
                       Text(
@@ -449,5 +512,12 @@ class _CasaPageState extends State<CasaPage> {
         ),
       );
     }
+  }
+
+  Color _getAnimatedBorderColor() {
+    // Cria um efeito de borda "andando" usando seno/cosseno
+    final value = _borderAnimationController.value;
+    final opacity = (0.3 + (0.7 * (0.5 + 0.5 * sin(value * 2 * pi)))).clamp(0.3, 1.0);
+    return AppColors.white.withOpacity(opacity);
   }
 }

@@ -1,11 +1,12 @@
 import 'package:dartz/dartz.dart';
 import '../../domain/entities/gutendex_book.dart';
+import '../../domain/repositories/banner_repository.dart';
 import '../datasources/banner_cache_datasource.dart';
 import '../datasources/gutendex_remote_datasource.dart';
 import '../../core/errors/failures.dart';
 import '../../core/errors/exceptions.dart';
 
-class BannerRepositoryImpl {
+class BannerRepositoryImpl implements BannerRepository {
   final GutendexRemoteDataSource remoteDataSource;
   final BannerCacheDataSource cacheDataSource;
 
@@ -14,11 +15,13 @@ class BannerRepositoryImpl {
     required this.cacheDataSource,
   });
 
+  @override
   Future<Either<Failure, List<GutendexBook>>> getFeaturedBooks() async {
     try {
       // Tentar buscar no cache primeiro
       final cachedBooks = await cacheDataSource.getCachedFeaturedBooks();
-      if (cachedBooks != null) {
+      if (cachedBooks != null && cachedBooks.isNotEmpty) {
+        // Converter GutendexBookModel para GutendexBook (já são compatíveis)
         return Right(cachedBooks);
       }
 
@@ -44,6 +47,17 @@ class BannerRepositoryImpl {
       return Left(NetworkFailure(e.message));
     } catch (e) {
       return Left(UnknownFailure('Erro desconhecido: $e'));
+    }
+  }
+
+  @override
+  Future<List<GutendexBook>> getCachedFeaturedBooksImmediate() async {
+    try {
+      // Buscar cache imediatamente, mesmo que expirado (para exibição instantânea)
+      final cachedBooks = await cacheDataSource.getCachedFeaturedBooksIgnoreValidity();
+      return cachedBooks ?? [];
+    } catch (e) {
+      return [];
     }
   }
 

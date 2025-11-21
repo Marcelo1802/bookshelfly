@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/books_viewmodel.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/di/injection_container.dart';
+import '../../data/datasources/user_books_datasource.dart';
+import '../../data/models/gutendex_book_model.dart';
 import '../../domain/entities/gutendex_book.dart';
 import '../widgets/book_card.dart';
 import '../widgets/loading_widget.dart';
@@ -163,6 +166,37 @@ class BookDetailsSheet extends StatefulWidget {
 
 class _BookDetailsSheetState extends State<BookDetailsSheet> {
   bool _isFavorited = false;
+  bool _isReading = false;
+  late UserBooksDataSource _userBooksDataSource;
+
+  @override
+  void initState() {
+    super.initState();
+    _userBooksDataSource = sl<UserBooksDataSource>();
+    _loadBookStates();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Recarregar estado quando a página voltar ao foco
+    // Isso garante que se o livro foi removido na Glass, o estado seja atualizado
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadBookStates();
+    });
+  }
+
+  Future<void> _loadBookStates() async {
+    final isFavorite = await _userBooksDataSource.isFavoriteBook(widget.book.id);
+    final isReading = await _userBooksDataSource.isReadingBook(widget.book.id);
+    
+    if (mounted) {
+      setState(() {
+        _isFavorited = isFavorite;
+        _isReading = isReading;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -339,13 +373,18 @@ class _BookDetailsSheetState extends State<BookDetailsSheet> {
                         child: Container(
                           height: 50,
                           decoration: BoxDecoration(
-                            gradient: widget.book.hasReadableText 
+                            gradient: _isReading 
                                 ? AppColors.primaryGradient
-                                : LinearGradient(
-                                    colors: [AppColors.grey, AppColors.grey],
-                                  ),
+                                : null,
+                            color: _isReading ? null : AppColors.white,
                             borderRadius: BorderRadius.circular(25),
-                            boxShadow: widget.book.hasReadableText ? [
+                            border: Border.all(
+                              color: widget.book.hasReadableText 
+                                  ? AppColors.primary 
+                                  : AppColors.grey,
+                              width: 2,
+                            ),
+                            boxShadow: _isReading ? [
                               BoxShadow(
                                 color: AppColors.primary.withOpacity(0.3),
                                 blurRadius: 8,
@@ -353,24 +392,24 @@ class _BookDetailsSheetState extends State<BookDetailsSheet> {
                               ),
                             ] : null,
                           ),
-                          child: ElevatedButton.icon(
+                          child: ElevatedButton(
                             onPressed: widget.book.hasReadableText 
-                                ? () => _openBookReader(context, widget.book)
+                                ? () => _toggleReading(context, widget.book)
                                 : () => _showNoTextAvailable(context),
-                            icon: Icon(
-                              widget.book.hasReadableText ? Icons.auto_stories : Icons.block,
-                              size: 20,
-                            ),
-                            label: Text(
-                              widget.book.hasReadableText ? 'Ler Livro' : 'Texto Não Disponível',
-                              style: const TextStyle(
+                            child: Text(
+                              _isReading ? 'Lendo' : 'Ler Livro',
+                              style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.transparent,
-                              foregroundColor: AppColors.white,
+                              foregroundColor: _isReading 
+                                  ? AppColors.white 
+                                  : (widget.book.hasReadableText 
+                                      ? AppColors.primary 
+                                      : AppColors.grey),
                               shadowColor: Colors.transparent,
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               shape: RoundedRectangleBorder(
@@ -455,10 +494,18 @@ class _BookDetailsSheetState extends State<BookDetailsSheet> {
     );
   }
 
-  void _toggleFavorite(BuildContext context, GutendexBook book) {
+  void _toggleFavorite(BuildContext context, GutendexBook book) async {
     setState(() {
       _isFavorited = !_isFavorited;
     });
+    
+    // Salvar no storage
+    final bookModel = GutendexBookModel.fromEntity(book);
+    if (_isFavorited) {
+      await _userBooksDataSource.addFavoriteBook(bookModel);
+    } else {
+      await _userBooksDataSource.removeFavoriteBook(book.id);
+    }
     
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -466,6 +513,34 @@ class _BookDetailsSheetState extends State<BookDetailsSheet> {
             ? '${book.title} foi adicionado aos favoritos!' 
             : '${book.title} foi removido dos favoritos!'),
         backgroundColor: _isFavorited ? Colors.red : AppColors.grey,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _toggleReading(BuildContext context, GutendexBook book) async {
+    // Se já está lendo, apenas abre o leitor sem mudar o estado
+    if (_isReading) {
+      _openBookReader(context, book);
+      return;
+    }
+    
+    // Se não está lendo, muda para "Lendo" e abre o leitor
+    setState(() {
+      _isReading = true;
+    });
+    
+    // Salvar no storage
+    final bookModel = GutendexBookModel.fromEntity(book);
+    await _userBooksDataSource.addReadingBook(bookModel);
+    
+    // Abrir o leitor
+    _openBookReader(context, book);
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Começando a ler ${book.title}!'),
+        backgroundColor: AppColors.primary,
         duration: const Duration(seconds: 2),
       ),
     );

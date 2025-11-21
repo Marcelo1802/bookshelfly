@@ -5,6 +5,7 @@ import '../../core/errors/exceptions.dart';
 
 abstract class BannerCacheDataSource {
   Future<List<GutendexBookModel>?> getCachedFeaturedBooks();
+  Future<List<GutendexBookModel>?> getCachedFeaturedBooksIgnoreValidity();
   Future<void> cacheFeaturedBooks(List<GutendexBookModel> books);
   Future<bool> isCacheValid({Duration maxAge = const Duration(hours: 2)});
   Future<void> clearBannerCache();
@@ -34,6 +35,21 @@ class BannerCacheDataSourceImpl implements BannerCacheDataSource {
       return null;
     } catch (e) {
       throw CacheException('Erro ao ler cache do banner: $e');
+    }
+  }
+
+  @override
+  Future<List<GutendexBookModel>?> getCachedFeaturedBooksIgnoreValidity() async {
+    try {
+      // Retornar cache mesmo que expirado (para exibição imediata)
+      final cachedData = sharedPreferences.getString(_bannerCacheKey);
+      if (cachedData != null) {
+        final List<dynamic> jsonList = json.decode(cachedData);
+        return jsonList.map((json) => GutendexBookModel.fromJson(json)).toList();
+      }
+      return null;
+    } catch (e) {
+      return null; // Retornar null silenciosamente para não bloquear a UI
     }
   }
 

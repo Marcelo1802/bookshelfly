@@ -16,16 +16,14 @@ class GutendexBookModel extends GutendexBook {
 
   factory GutendexBookModel.fromJson(Map<String, dynamic> json) {
     return GutendexBookModel(
-      id: json['id'] as int,
-      title: json['title'] as String,
-      authors: (json['authors'] as List)
-          .map((author) => GutendexAuthorModel.fromJson(author))
-          .toList(),
+      id: json['id'] as int? ?? 0,
+      title: json['title'] as String? ?? '',
+      authors: (json['authors'] as List?)?.map((author) => GutendexAuthorModel.fromJson(author as Map<String, dynamic>)).toList() ?? [],
       subjects: List<String>.from(json['subjects'] ?? []),
       bookshelves: List<String>.from(json['bookshelves'] ?? []),
       languages: List<String>.from(json['languages'] ?? []),
       copyright: json['copyright'] as bool? ?? false,
-      mediaType: json['media_type'] as String,
+      mediaType: json['media_type'] as String? ?? '',
       formats: Map<String, String>.from(json['formats'] ?? {}),
       downloadCount: json['download_count'] as int? ?? 0,
     );
@@ -35,7 +33,13 @@ class GutendexBookModel extends GutendexBook {
     return {
       'id': id,
       'title': title,
-      'authors': authors.map((author) => (author as GutendexAuthorModel).toJson()).toList(),
+      'authors': authors.map((author) {
+        if (author is GutendexAuthorModel) {
+          return author.toJson();
+        } else {
+          return GutendexAuthorModel(name: author.name, birthYear: author.birthYear, deathYear: author.deathYear).toJson();
+        }
+      }).toList(),
       'subjects': subjects,
       'bookshelves': bookshelves,
       'languages': languages,
@@ -50,7 +54,17 @@ class GutendexBookModel extends GutendexBook {
     return GutendexBookModel(
       id: book.id,
       title: book.title,
-      authors: book.authors,
+      authors: book.authors.map((author) {
+        if (author is GutendexAuthorModel) {
+          return author;
+        } else {
+          return GutendexAuthorModel(
+            name: author.name,
+            birthYear: author.birthYear,
+            deathYear: author.deathYear,
+          );
+        }
+      }).toList(),
       subjects: book.subjects,
       bookshelves: book.bookshelves,
       languages: book.languages,
@@ -71,7 +85,7 @@ class GutendexAuthorModel extends GutendexAuthor {
 
   factory GutendexAuthorModel.fromJson(Map<String, dynamic> json) {
     return GutendexAuthorModel(
-      name: json['name'] as String,
+      name: json['name'] as String? ?? 'Autor Desconhecido',
       birthYear: json['birth_year'] as int?,
       deathYear: json['death_year'] as int?,
     );

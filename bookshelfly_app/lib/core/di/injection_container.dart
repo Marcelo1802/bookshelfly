@@ -4,16 +4,21 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../data/datasources/gutendex_remote_datasource.dart';
 import '../../data/datasources/gutendex_local_datasource.dart';
 import '../../data/datasources/banner_cache_datasource.dart';
+import '../../data/datasources/user_books_datasource.dart';
+import '../../data/datasources/notes_datasource.dart';
 import '../../data/datasources/book_content_datasource.dart';
 import '../../data/repositories/book_repository_impl.dart';
 import '../../data/repositories/book_content_repository_impl.dart';
+import '../../data/repositories/banner_repository_impl.dart';
 import '../../domain/repositories/book_repository.dart';
 import '../../domain/repositories/book_content_repository.dart';
+import '../../domain/repositories/banner_repository.dart';
 import '../../domain/usecases/get_all_books.dart';
 import '../../domain/usecases/add_book.dart';
 import '../../domain/usecases/get_book_by_id.dart';
 import '../../domain/usecases/get_book_content.dart';
 import '../../domain/usecases/get_featured_books.dart';
+import '../../domain/usecases/get_brazilian_books.dart';
 import '../../domain/usecases/clear_cache.dart';
 
 final sl = GetIt.instance;
@@ -38,6 +43,14 @@ Future<void> init() async {
     () => BannerCacheDataSourceImpl(sharedPreferences: sl()),
   );
   
+  sl.registerLazySingleton<UserBooksDataSource>(
+    () => UserBooksDataSourceImpl(sharedPreferences: sl()),
+  );
+  
+  sl.registerLazySingleton<NotesDataSource>(
+    () => NotesDataSourceImpl(sharedPreferences: sl()),
+  );
+  
   sl.registerLazySingleton<BookContentDataSource>(
     () => BookContentDataSourceImpl(client: sl()),
   );
@@ -53,6 +66,13 @@ Future<void> init() async {
   sl.registerLazySingleton<BookContentRepository>(
     () => BookContentRepositoryImpl(dataSource: sl()),
   );
+  
+  sl.registerLazySingleton<BannerRepository>(
+    () => BannerRepositoryImpl(
+      remoteDataSource: sl(),
+      cacheDataSource: sl(),
+    ),
+  );
 
   // Use cases
   sl.registerLazySingleton(() => GetBooks(sl()));
@@ -60,5 +80,6 @@ Future<void> init() async {
   sl.registerLazySingleton(() => GetBookById(sl()));
   sl.registerLazySingleton(() => GetBookContent(sl()));
   sl.registerLazySingleton(() => GetFeaturedBooks(sl()));
+  sl.registerLazySingleton(() => GetBrazilianBooks(sl()));
   sl.registerLazySingleton(() => ClearCache(sl()));
 }

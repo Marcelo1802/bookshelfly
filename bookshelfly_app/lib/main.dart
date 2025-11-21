@@ -24,6 +24,8 @@ class BookShelflyApp extends StatelessWidget {
             searchBooks: sl(),
             getBookById: sl(),
             getFeaturedBooks: sl(),
+            getBrazilianBooks: sl(),
+            bannerRepository: sl(),
           ),
         ),
       ],

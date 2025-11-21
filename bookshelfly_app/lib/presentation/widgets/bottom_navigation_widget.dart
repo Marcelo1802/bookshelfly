@@ -33,13 +33,17 @@ class BottomNavigationWidget extends StatelessWidget {
           Expanded(child: _buildNavItem(0, 'assets/img1.png')), // Home
           Expanded(child: _buildNavItem(1, 'assets/img2.png')), // Buscar
           Expanded(child: _buildNavItem(2, 'assets/img3.png')), // Esportes
+          Expanded(child: _buildNavItem(3, 'assets/glass.png', selectedImage: 'assets/eyeglass.png')), // Glass
         ],
       ),
     );
   }
 
-  Widget _buildNavItem(int index, String imagePath) {
+  Widget _buildNavItem(int index, String imagePath, {String? selectedImage}) {
     final bool isSelected = currentIndex == index;
+    final String imageToShow = isSelected && selectedImage != null 
+        ? selectedImage 
+        : imagePath;
     
     return GestureDetector(
       onTap: () => onTap(index),
@@ -65,7 +69,7 @@ class BottomNavigationWidget extends StatelessWidget {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
                   child: Image.asset(
-                    imagePath,
+                    imageToShow,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
