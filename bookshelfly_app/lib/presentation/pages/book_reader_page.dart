@@ -403,27 +403,35 @@ class _BookReaderPageState extends State<BookReaderPage> {
       text: (_currentPage + 1).toString(),
     );
 
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final double maxDialogWidth = (screenWidth - 40).clamp(280.0, 380.0);
+
     showDialog(
       context: context,
       barrierDismissible: true,
       builder: (context) => Dialog(
         backgroundColor: Colors.transparent,
-        child: Container(
-          margin: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: _backgroundColor,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.3),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: maxDialogWidth,
+            ),
+            child: Container(
+              margin: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: _backgroundColor,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
               ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
               // Header com gradiente
               Container(
                 padding: const EdgeInsets.all(20),
@@ -492,6 +500,7 @@ class _BookReaderPageState extends State<BookReaderPage> {
               Padding(
                 padding: const EdgeInsets.all(24),
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     // Texto explicativo
                     Text(
@@ -506,48 +515,61 @@ class _BookReaderPageState extends State<BookReaderPage> {
                     const SizedBox(height: 16),
                     
                     // Campo de entrada estilizado
-                    Container(
-                      constraints: const BoxConstraints(
-                        maxWidth: 200,
-                      ),
-                      decoration: BoxDecoration(
-                        color: _isDarkMode ? AppColors.greyDark : AppColors.greyLight,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: _textColor.withOpacity(0.1),
-                          width: 1,
-                        ),
-                      ),
-                      child: TextField(
-                        controller: pageController,
-                        keyboardType: TextInputType.number,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: _textColor,
-                        ),
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 14,
+                    Center(
+                      child: SizedBox(
+                        width: 220,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: _isDarkMode ? AppColors.greyDark : AppColors.greyLight,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: _textColor.withOpacity(0.1),
+                              width: 1,
+                            ),
                           ),
-                          hintText: 'Ex: 90',
-                          hintStyle: TextStyle(
-                            color: _textColor.withOpacity(0.5),
-                            fontSize: 16,
-                            fontWeight: FontWeight.normal,
-                          ),
-                          prefixIcon: Icon(
-                            Icons.bookmark,
-                            color: _textColor.withOpacity(0.6),
-                            size: 20,
+                          child: Row(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(left: 10),
+                                child: Icon(
+                                  Icons.bookmark,
+                                  color: _textColor.withOpacity(0.6),
+                                  size: 18,
+                                ),
+                              ),
+                              Expanded(
+                                child: TextField(
+                                  controller: pageController,
+                                  keyboardType: TextInputType.number,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: _textColor,
+                                  ),
+                                  decoration: InputDecoration(
+                                    border: InputBorder.none,
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 12,
+                                    ),
+                                    hintText: 'Ex: 90',
+                                    hintStyle: TextStyle(
+                                      color: _textColor.withOpacity(0.5),
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.normal,
+                                    ),
+                                    isDense: true,
+                                  ),
+                                  onSubmitted: (value) {
+                                    _navigateToPage(value, pageController);
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                            ],
                           ),
                         ),
-                        onSubmitted: (value) {
-                          _navigateToPage(value, pageController);
-                        },
                       ),
                     ),
                     
@@ -601,7 +623,9 @@ class _BookReaderPageState extends State<BookReaderPage> {
                   ],
                 ),
               ),
-            ],
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -634,6 +658,7 @@ class _BookReaderPageState extends State<BookReaderPage> {
             padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
                   icon,
@@ -641,12 +666,15 @@ class _BookReaderPageState extends State<BookReaderPage> {
                   size: 20,
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  label,
-                  style: TextStyle(
-                    color: _textColor,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
+                Flexible(
+                  child: Text(
+                    label,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: _textColor,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
               ],
