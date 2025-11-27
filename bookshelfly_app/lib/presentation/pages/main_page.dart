@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../widgets/bottom_navigation_widget.dart';
-import 'casa_page.dart';
+import 'home_page.dart';
 import 'books_page.dart';
-import 'esportes_page.dart';
+import 'notes_page.dart';
 import 'glass_page.dart';
 
 class MainPage extends StatefulWidget {
@@ -16,9 +16,9 @@ class _MainPageState extends State<MainPage> {
   int _currentIndex = 0;
   
   final List<Widget> _pages = [
-    const CasaPage(), // Home estilo Netflix para livros
+    const HomePage(), // Home estilo Netflix para livros
     const BooksPage(), // Buscar livros
-    const EsportesPage(),
+    const NotesPage(), // Anotações
     const GlassPage(), // Glass
   ];
 

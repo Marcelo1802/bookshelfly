@@ -8,14 +8,14 @@ import '../viewmodels/books_viewmodel.dart';
 import '../widgets/loading_widget.dart';
 import 'book_reader_page.dart';
 
-class CasaPage extends StatefulWidget {
-  const CasaPage({super.key});
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
 
   @override
-  State<CasaPage> createState() => _CasaPageState();
+  State<HomePage> createState() => _HomePageState();
 }
 
-class _CasaPageState extends State<CasaPage> with SingleTickerProviderStateMixin {
+class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
   Timer? _timer;
   int _currentFeaturedIndex = 0;
   List<GutendexBook> _featuredBooks = [];

@@ -5,14 +5,14 @@ import '../../data/datasources/notes_datasource.dart';
 import '../../data/models/note_model.dart';
 import 'dart:math';
 
-class EsportesPage extends StatefulWidget {
-  const EsportesPage({super.key});
+class NotesPage extends StatefulWidget {
+  const NotesPage({super.key});
 
   @override
-  State<EsportesPage> createState() => _EsportesPageState();
+  State<NotesPage> createState() => _NotesPageState();
 }
 
-class _EsportesPageState extends State<EsportesPage> {
+class _NotesPageState extends State<NotesPage> {
   late NotesDataSource _notesDataSource;
   List<NoteModel> _notes = [];
   bool _isLoading = true;
