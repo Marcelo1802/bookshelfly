@@ -1,0 +1,149 @@
+═══════════════════════════════════════════════════════════════
+TEXTO PROMOCIONAL (170 caracteres)
+═══════════════════════════════════════════════════════════════
+
+📚 Acesse milhares de livros GRATUITOS do Projeto Gutenberg! Leia clássicos da literatura mundial, organize sua biblioteca pessoal e descubra novos títulos todos os dias. Cultura e conhecimento ao alcance de todos!
+
+(169 caracteres)
+
+═══════════════════════════════════════════════════════════════
+DESCRIÇÃO (4000 caracteres)
+═══════════════════════════════════════════════════════════════
+
+📚 BookShelfly - Sua Biblioteca Digital Gratuita
+
+Descubra um mundo de conhecimento e entretenimento com o BookShelfly! Acesse mais de 70.000 livros gratuitos do Projeto Gutenberg, uma das maiores bibliotecas digitais do mundo.
+
+✨ FUNCIONALIDADES PRINCIPAIS
+
+🏠 PÁGINA INICIAL
+• Banner em destaque com livros selecionados
+• Categoria especial de literatura brasileira
+• Seção de livros populares
+• Carregamento instantâneo com cache inteligente
+
+📚 BIBLIOTECA COMPLETA
+• Explore milhares de livros gratuitos
+• Busca avançada por título, autor ou assunto
+• Visualização em grid ou lista
+• Informações detalhadas de cada obra
+• Botões rápidos para ler e favoritar
+
+📖 LEITOR DE LIVROS
+• Interface otimizada para leitura
+• Navegação rápida entre páginas
+• Configurações personalizáveis
+• Salvamento automático do progresso
+• Busca por página específica
+
+👓 BIBLIOTECA PESSOAL
+• Organize seus livros em "Lendo" e "Favoritos"
+• Gerencie sua coleção pessoal
+• Busca dentro da sua biblioteca
+• Remova livros facilmente
+
+📝 SISTEMA DE NOTAS
+• Crie anotações pessoais
+• Organize com cores variadas
+• Persistência local segura
+
+⚡ PERFORMANCE E TECNOLOGIA
+• Cache inteligente para carregamento rápido
+• Funciona offline após download
+• Interface moderna e intuitiva
+• Design responsivo e fluido
+
+🌍 IMPACTO SOCIAL
+
+O BookShelfly democratiza o acesso à literatura, oferecendo:
+• Acesso gratuito a obras clássicas
+• Preservação do patrimônio literário
+• Incentivo à leitura e educação
+• Suporte à literatura brasileira
+• Cultura acessível para todos
+
+📖 CATEGORIAS DISPONÍVEIS
+
+• Literatura Brasileira
+• Clássicos Mundiais
+• Ficção e Romance
+• História e Biografias
+• Filosofia e Ciências
+• Poesia e Teatro
+• E muito mais!
+
+🎯 IDEAL PARA
+
+• Estudantes e pesquisadores
+• Amantes da leitura
+• Professores e educadores
+• Pessoas que buscam conhecimento
+• Quem quer desenvolver o hábito da leitura
+• Interessados em literatura clássica
+
+💡 DESTAQUES
+
+✅ Totalmente gratuito
+✅ Sem anúncios
+✅ Mais de 70.000 livros disponíveis
+✅ Funciona offline
+✅ Interface intuitiva
+✅ Organização personalizada
+✅ Literatura brasileira em destaque
+✅ Cache inteligente para performance
+
+🚀 COMO USAR
+
+1. Abra o app e explore a página inicial
+2. Navegue pelas categorias ou use a busca
+3. Toque em um livro para ver detalhes
+4. Adicione aos favoritos ou comece a ler
+5. Organize sua biblioteca pessoal na aba "Glass"
+6. Crie notas para suas anotações pessoais
+
+📱 COMPATIBILIDADE
+
+• iOS e Android
+• Interface otimizada para mobile
+• Design moderno e responsivo
+• Performance otimizada
+
+🔒 PRIVACIDADE
+
+Seus dados são armazenados localmente no dispositivo. Não coletamos informações pessoais. Sua privacidade é nossa prioridade.
+
+📚 SOBRE O PROJETO GUTENBERG
+
+O Projeto Gutenberg é uma biblioteca digital que oferece mais de 70.000 livros eletrônicos gratuitos. Fundado em 1971, é a mais antiga biblioteca digital do mundo, dedicada a disponibilizar obras de domínio público.
+
+🎓 PROJETO EDUCACIONAL
+
+Este aplicativo foi desenvolvido como projeto educacional, demonstrando práticas modernas de desenvolvimento mobile com Flutter, Clean Architecture e padrões de design profissionais.
+
+⭐ AVALIE-NOS
+
+Sua opinião é importante! Se você gostou do BookShelfly, deixe uma avaliação positiva na loja. Isso nos ajuda a melhorar e alcançar mais pessoas.
+
+📧 SUPORTE
+
+Encontrou algum problema ou tem sugestões? Entre em contato conosco. Estamos sempre trabalhando para melhorar sua experiência.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Comece sua jornada de leitura hoje mesmo! Baixe o BookShelfly e tenha acesso a milhares de livros gratuitos na palma da sua mão.
+
+Cultura, conhecimento e entretenimento ao alcance de todos. 📚✨
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+(3.987 caracteres)
+
+═══════════════════════════════════════════════════════════════
+PALAVRAS-CHAVE (100 caracteres)
+═══════════════════════════════════════════════════════════════
+
+livros,leitura,gratuito,biblioteca,ebook,projeto gutenberg,literatura,clássicos,brasileiros,offline,cache,notas,favoritos,estudos,educação,cultura
+
+(99 caracteres)
+
+═══════════════════════════════════════════════════════════════

@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookShelfly - Documentação do Projeto</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #d32f2f;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            border-bottom: 4px solid #d32f2f;
+            padding-bottom: 10px;
+        }
+        
+        h2 {
+            color: #1976d2;
+            font-size: 1.8em;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            border-left: 5px solid #1976d2;
+            padding-left: 15px;
+        }
+        
+        h3 {
+            color: #388e3c;
+            font-size: 1.4em;
+            margin-top: 25px;
+            margin-bottom: 12px;
+        }
+        
+        h4 {
+            color: #f57c00;
+            font-size: 1.2em;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        
+        p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+        
+        .highlight {
+            background: #fff3cd;
+            padding: 15px;
+            border-left: 4px solid #ffc107;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .info-box {
+            background: #e3f2fd;
+            padding: 15px;
+            border-left: 4px solid #2196f3;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .success-box {
+            background: #e8f5e9;
+            padding: 15px;
+            border-left: 4px solid #4caf50;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        ul, ol {
+            margin-left: 30px;
+            margin-bottom: 15px;
+        }
+        
+        li {
+            margin-bottom: 8px;
+        }
+        
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #d32f2f;
+        }
+        
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .feature-item {
+            background: #f9f9f9;
+            padding: 12px;
+            border-radius: 5px;
+            border-left: 3px solid #4caf50;
+        }
+        
+        .tech-badge {
+            display: inline-block;
+            background: #1976d2;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            margin: 5px;
+            font-size: 0.9em;
+        }
+        
+        .architecture-diagram {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border: 2px solid #ddd;
+        }
+        
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #ddd;
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        th {
+            background: #1976d2;
+            color: white;
+        }
+        
+        tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+        
+        .page-break {
+            page-break-before: always;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 BookShelfly</h1>
+        <p style="font-size: 1.2em; color: #666; margin-bottom: 30px;">
+            <strong>Documentação Completa do Projeto</strong><br>
+            Aplicativo Mobile de Leitura e Gerenciamento de Livros
+        </p>
+
+        <div class="success-box">
+            <h2 style="margin-top: 0; border: none; padding: 0;">🌍 Impacto Social</h2>
+            <p>
+                O BookShelfly contribui para democratizar o acesso à literatura e ao conhecimento, oferecendo milhares de livros gratuitos ao público. Ele preserva obras clássicas, valoriza a literatura brasileira e incentiva o hábito da leitura, tornando a cultura acessível para estudantes, educadores e leitores de todas as idades — inclusive em regiões com recursos limitados ou acesso restrito a bibliotecas físicas. Com funcionamento offline, organização personalizada e navegação simples, o app promove educação, inclusão e disseminação do patrimônio literário mundial.
+            </p>
+        </div>
+
+        <div class="info-box">
+            <h3 style="margin-top: 0;">🔒 PRIVACIDADE</h3>
+            <p>Seus dados são armazenados localmente no dispositivo. Não coletamos informações pessoais. Sua privacidade é nossa prioridade.</p>
+        </div>
+
+        <div class="info-box">
+            <h3 style="margin-top: 0;">📱 COMPATIBILIDADE</h3>
+            <p>• iOS e Android</p>
+        </div>
+
+        <div class="success-box">
+            <h3 style="margin-top: 0;">💡 DESTAQUES</h3>
+            <p>
+                ✅ Totalmente gratuito<br>
+                ✅ Sem anúncios<br>
+                ✅ Mais de 70.000 livros disponíveis<br>
+                ✅ Funciona offline<br>
+                ✅ Interface intuitiva<br>
+                ✅ Organização personalizada<br>
+                ✅ Literatura brasileira em destaque<br>
+                ✅ Cache inteligente para performance
+            </p>
+        </div>
+
+        <div class="info-box">
+            <h3 style="margin-top: 0;">📖 CATEGORIAS DISPONÍVEIS</h3>
+            <p>
+                • Literatura Brasileira<br>
+                • Clássicos Mundiais<br>
+                • Ficção e Romance<br>
+                • História e Biografias<br>
+                • Filosofia e Ciências<br>
+                • Poesia e Teatro<br>
+                • E muito mais!
+            </p>
+        </div>
+
+        <div class="info-box">
+            <h3 style="margin-top: 0;">🎯 IDEAL PARA</h3>
+            <p>
+                • Estudantes e pesquisadores<br>
+                • Amantes da leitura<br>
+                • Professores e educadores<br>
+                • Pessoas que buscam conhecimento<br>
+                • Quem quer desenvolver o hábito da leitura<br>
+                • Interessados em literatura clássica
+            </p>
+        </div>
+
+        <h2>1. Introdução</h2>
+        <p>
+            O <strong>BookShelfly</strong> é um aplicativo mobile desenvolvido em Flutter que permite aos usuários 
+            explorar, ler e gerenciar uma biblioteca pessoal de livros. O aplicativo utiliza a API pública 
+            <strong>Gutendex</strong>, que fornece acesso a mais de 70.000 livros de domínio público do 
+            <strong>Projeto Gutenberg</strong>, uma das maiores bibliotecas digitais gratuitas do mundo.
+        </p>
+        
+        <p>
+            O projeto foi desenvolvido seguindo os princípios da <strong>Clean Architecture</strong> e o padrão 
+            <strong>MVVM (Model-View-ViewModel)</strong>, demonstrando boas práticas de desenvolvimento de software, 
+            separação de responsabilidades, testabilidade e manutenibilidade de código.
+        </p>
+
+        <h2>2. Tecnologias e Conceitos Aplicados</h2>
+        <p>
+            Este projeto foi desenvolvido como uma base prática para demonstrar, na prática, padrões de arquitetura, técnicas de desenvolvimento e soluções modernas utilizadas em aplicações mobile robustas. Ele reúne conceitos essenciais para construção de apps escaláveis, performáticos e bem estruturados, servindo como referência para estudos e para aplicação em projetos reais.
+        </p>
+        
+        <div class="feature-list">
+            <div class="feature-item">
+                <strong>🏗️ Arquitetura de Software</strong><br>
+                Clean Architecture com separação clara de camadas
+            </div>
+            <div class="feature-item">
+                <strong>📱 Desenvolvimento Flutter</strong><br>
+                Framework multiplataforma para iOS e Android
+            </div>
+            <div class="feature-item">
+                <strong>🔄 Gerenciamento de Estado</strong><br>
+                Provider pattern para controle de estado da aplicação
+            </div>
+            <div class="feature-item">
+                <strong>💉 Injeção de Dependência</strong><br>
+                GetIt para gerenciamento de dependências
+            </div>
+            <div class="feature-item">
+                <strong>🌐 Integração com APIs</strong><br>
+                Consumo de APIs RESTful com tratamento de erros
+            </div>
+            <div class="feature-item">
+                <strong>💾 Persistência de Dados</strong><br>
+                Armazenamento local com SharedPreferences
+            </div>
+            <div class="feature-item">
+                <strong>⚡ Cache e Performance</strong><br>
+                Estratégias de cache para otimização
+            </div>
+            <div class="feature-item">
+                <strong>🧪 Testabilidade</strong><br>
+                Código estruturado para facilitar testes unitários
+            </div>
+        </div>
+
+        <h2>3. Arquitetura do Projeto</h2>
+        
+        <p>
+            O BookShelfly foi desenvolvido seguindo os princípios da <strong>Clean Architecture</strong>, 
+            que promove a separação de responsabilidades e independência entre camadas. A arquitetura é 
+            dividida em três camadas principais:
+        </p>
+
+        <div class="architecture-diagram">
+            <h3>Estrutura de Camadas</h3>
+            <ul>
+                <li><strong>Presentation Layer (MVVM):</strong> Interface do usuário e lógica de apresentação</li>
+                <li><strong>Domain Layer:</strong> Regras de negócio e entidades puras</li>
+                <li><strong>Data Layer:</strong> Acesso a dados e implementação de repositórios</li>
+            </ul>
+        </div>
+
+        <h3>4.1. Presentation Layer (Camada de Apresentação)</h3>
+        <p>
+            Esta camada é responsável pela interface do usuário e utiliza o padrão <strong>MVVM</strong>:
+        </p>
+        <ul>
+            <li><strong>View:</strong> Widgets Flutter que compõem a interface (Pages e Widgets)</li>
+            <li><strong>ViewModel:</strong> Gerencia o estado e a lógica de apresentação (BooksViewModel)</li>
+            <li><strong>Model:</strong> Entidades do domínio que representam os dados</li>
+        </ul>
+
+        <h3>4.2. Domain Layer (Camada de Domínio)</h3>
+        <p>
+            Contém as regras de negócio puras, independentes de frameworks e bibliotecas externas:
+        </p>
+        <ul>
+            <li><strong>Entities:</strong> Objetos de negócio (GutendexBook, etc.)</li>
+            <li><strong>Use Cases:</strong> Casos de uso específicos (GetAllBooks, GetBookById, etc.)</li>
+            <li><strong>Repository Contracts:</strong> Interfaces que definem contratos de repositórios</li>
+        </ul>
+
+        <h3>4.3. Data Layer (Camada de Dados)</h3>
+        <p>
+            Responsável pelo acesso a dados, tanto locais quanto remotos:
+        </p>
+        <ul>
+            <li><strong>Data Sources:</strong> Fontes de dados (Remote e Local)</li>
+            <li><strong>Models:</strong> Modelos de dados com serialização JSON</li>
+            <li><strong>Repository Implementations:</strong> Implementação dos contratos definidos no Domain</li>
+        </ul>
+
+        <h2>4. Funcionalidades Implementadas</h2>
+
+        <h3>4.1. Página Inicial (Home)</h3>
+        <ul>
+            <li><strong>Banner em Destaque:</strong> Exibe livros em destaque com rotação automática</li>
+            <li><strong>Categoria Brasileiros:</strong> Seção dedicada a livros de autores brasileiros</li>
+            <li><strong>Categoria Popular:</strong> Livros mais populares da biblioteca</li>
+            <li><strong>Cache Inteligente:</strong> Carregamento imediato de conteúdo em cache</li>
+        </ul>
+
+        <h3>4.2. Biblioteca de Livros (Books)</h3>
+        <ul>
+            <li><strong>Listagem de Livros:</strong> Visualização em grid ou lista</li>
+            <li><strong>Busca:</strong> Pesquisa de livros por título, autor ou assunto</li>
+            <li><strong>Detalhes do Livro:</strong> Informações completas sobre cada livro</li>
+            <li><strong>Botões de Ação:</strong> "Ler Livro" e "Favoritar" com estados visuais</li>
+        </ul>
+
+        <h3>4.3. Leitor de Livros (Book Reader)</h3>
+        <ul>
+            <li><strong>Visualização de Conteúdo:</strong> Leitura completa do livro</li>
+            <li><strong>Navegação Rápida:</strong> Busca por página específica</li>
+            <li><strong>Configurações de Leitura:</strong> Personalização da experiência</li>
+            <li><strong>Progresso de Leitura:</strong> Salvamento automático do progresso</li>
+        </ul>
+
+        <h3>4.4. Biblioteca Pessoal (Glass)</h3>
+        <ul>
+            <li><strong>Lista "Lendo":</strong> Livros que o usuário está lendo atualmente</li>
+            <li><strong>Lista "Favoritos":</strong> Livros marcados como favoritos</li>
+            <li><strong>Gerenciamento:</strong> Adição e remoção de livros das listas</li>
+            <li><strong>Busca Personalizada:</strong> Filtro dentro da biblioteca pessoal</li>
+        </ul>
+
+        <h3>4.5. Notas (Notes)</h3>
+        <ul>
+            <li><strong>Criação de Notas:</strong> Sistema de anotações pessoais</li>
+            <li><strong>Organização Visual:</strong> Grid com cores variadas</li>
+            <li><strong>Persistência:</strong> Armazenamento local das notas</li>
+        </ul>
+
+        <h3>4.6. Sistema de Cache</h3>
+        <ul>
+            <li><strong>Cache de API:</strong> Reduz chamadas desnecessárias à API</li>
+            <li><strong>Cache de Banner:</strong> Carregamento instantâneo do conteúdo em destaque</li>
+            <li><strong>Fallback Offline:</strong> Funcionalidade mesmo sem internet</li>
+            <li><strong>Invalidação Inteligente:</strong> Atualização automática quando necessário</li>
+        </ul>
+
+        <h2>5. Tecnologias e Ferramentas Utilizadas</h2>
+
+        <h3>5.1. Framework e Linguagem</h3>
+        <p>
+            <span class="tech-badge">Flutter</span>
+            <span class="tech-badge">Dart 3.8.1</span>
+        </p>
+
+        <h3>5.2. Gerenciamento de Estado</h3>
+        <p>
+            <span class="tech-badge">Provider 6.1.2</span>
+        </p>
+        <p>
+            Utilizado para gerenciar o estado da aplicação de forma reativa e eficiente.
+        </p>
+
+        <h3>5.3. Injeção de Dependência</h3>
+        <p>
+            <span class="tech-badge">GetIt 7.7.0</span>
+        </p>
+        <p>
+            Facilita o gerenciamento de dependências e promove baixo acoplamento entre componentes.
+        </p>
+
+        <h3>5.4. Programação Funcional</h3>
+        <p>
+            <span class="tech-badge">Dartz 0.10.1</span>
+        </p>
+        <p>
+            Utilizado para tratamento de erros funcional através do tipo <code>Either&lt;Failure, Success&gt;</code>.
+        </p>
+
+        <h3>5.5. Armazenamento Local</h3>
+        <p>
+            <span class="tech-badge">SharedPreferences 2.3.2</span>
+        </p>
+        <p>
+            Para persistência de dados do usuário (favoritos, lista de leitura, notas, cache).
+        </p>
+
+        <h3>5.6. Comunicação HTTP</h3>
+        <p>
+            <span class="tech-badge">HTTP 1.1.0</span>
+        </p>
+        <p>
+            Cliente HTTP para comunicação com a API Gutendex.
+        </p>
+
+        <h3>5.7. Cache de Imagens</h3>
+        <p>
+            <span class="tech-badge">Cached Network Image 3.3.1</span>
+        </p>
+        <p>
+            Otimização do carregamento e cache de imagens dos livros.
+        </p>
+
+        <h3>5.8. Outras Ferramentas</h3>
+        <p>
+            <span class="tech-badge">Equatable 2.0.5</span>
+            <span class="tech-badge">Path Provider 2.1.2</span>
+            <span class="tech-badge">Flutter Launcher Icons</span>
+        </p>
+
+        <h2>6. Estrutura do Projeto</h2>
+
+        <div class="code-block">
+lib/
+├── core/                    # Funcionalidades centrais
+│   ├── constants/          # Constantes (cores, strings)
+│   ├── errors/             # Tratamento de erros
+│   ├── di/                 # Injeção de dependência
+│   └── utils/              # Utilitários
+├── data/                   # Camada de Dados
+│   ├── datasources/        # Fontes de dados
+│   ├── models/             # Modelos de dados
+│   └── repositories/        # Implementação de repositórios
+├── domain/                 # Camada de Domínio
+│   ├── entities/           # Entidades de negócio
+│   ├── repositories/       # Contratos de repositórios
+│   └── usecases/           # Casos de uso
+└── presentation/           # Camada de Apresentação
+    ├── pages/              # Páginas da aplicação
+    ├── viewmodels/         # ViewModels
+    └── widgets/            # Widgets reutilizáveis
+        </div>
+
+        <h2>7. Como Utilizar o Projeto</h2>
+
+        <h3>7.1. Pré-requisitos</h3>
+        <ul>
+            <li>Flutter SDK 3.8.1 ou superior</li>
+            <li>Dart SDK</li>
+            <li>Android Studio / Xcode (para desenvolvimento mobile)</li>
+            <li>Git (para controle de versão)</li>
+        </ul>
+
+        <h3>7.2. Instalação</h3>
+        <div class="code-block">
+# Clonar o repositório
+git clone https://github.com/Marcelo1802/bookshelfly
+
+# Entrar no diretório do projeto
+cd bookshelfly_app
+
+# Instalar dependências
+flutter pub get
+
+# Executar o aplicativo
+flutter run
+        </div>
+
+        <h3>7.3. Execução em Dispositivos</h3>
+        <ul>
+            <li><strong>iOS:</strong> <code>flutter run -d ios</code></li>
+            <li><strong>Android:</strong> <code>flutter run -d android</code></li>
+            <li><strong>Simulador/Emulador:</strong> Selecionar dispositivo disponível</li>
+        </ul>
+
+        <h2>8. Principais Conceitos Aplicados</h2>
+
+        <h3>8.1. Clean Architecture</h3>
+        <p>
+            A Clean Architecture promove a separação de responsabilidades através de camadas independentes, 
+            facilitando testes, manutenção e evolução do código.
+        </p>
+
+        <h3>8.2. SOLID Principles</h3>
+        <ul>
+            <li><strong>S</strong>ingle Responsibility: Cada classe tem uma única responsabilidade</li>
+            <li><strong>O</strong>pen/Closed: Aberto para extensão, fechado para modificação</li>
+            <li><strong>L</strong>iskov Substitution: Subtipos devem ser substituíveis por seus tipos base</li>
+            <li><strong>I</strong>nterface Segregation: Interfaces específicas ao invés de genéricas</li>
+            <li><strong>D</strong>ependency Inversion: Depender de abstrações, não de implementações</li>
+        </ul>
+
+        <h3>8.3. Design Patterns</h3>
+        <ul>
+            <li><strong>Repository Pattern:</strong> Abstração do acesso a dados</li>
+            <li><strong>MVVM:</strong> Separação entre View, ViewModel e Model</li>
+            <li><strong>Dependency Injection:</strong> Inversão de controle de dependências</li>
+            <li><strong>Factory Pattern:</strong> Criação de objetos complexos</li>
+        </ul>
+
+        <h2>9. Melhorias Futuras</h2>
+
+        <p>O projeto pode ser expandido com as seguintes funcionalidades:</p>
+        <ul>
+            <li>Sincronização em nuvem</li>
+            <li>Modo offline completo</li>
+            <li>Temas claro/escuro</li>
+            <li>Compartilhamento de livros</li>
+            <li>Anotações dentro dos livros</li>
+            <li>Estatísticas de leitura</li>
+            <li>Recomendações personalizadas</li>
+            <li>Suporte a múltiplos idiomas</li>
+        </ul>
+
+        <h2>10. Conclusão</h2>
+
+        <div class="info-box">
+            <p>
+                O <strong>BookShelfly</strong> é um projeto que demonstra a aplicação prática de conceitos 
+                avançados de desenvolvimento mobile, arquitetura de software e boas práticas de programação. 
+                Além disso, contribui socialmente ao facilitar o acesso gratuito à literatura e promover a 
+                cultura e educação através da tecnologia.
+            </p>
+            
+            <p>
+                Este projeto serve como uma excelente base de aprendizado para desenvolvedores que desejam 
+                entender Clean Architecture, Flutter, e como construir aplicações mobile escaláveis e 
+                manuteníveis, ao mesmo tempo em que cria um produto útil que pode beneficiar a sociedade 
+                como um todo.
+            </p>
+        </div>
+
+        <div class="footer">
+            <p><strong>BookShelfly</strong> - Projeto Educacional</p>
+            <p>Desenvolvido com Flutter e Clean Architecture</p>
+            <p>© 2024 - Documentação Técnica</p>
+        </div>
+    </div>
+</body>
+</html>
