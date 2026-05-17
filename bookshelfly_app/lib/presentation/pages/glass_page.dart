@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/di/injection_container.dart';
+import '../../core/utils/web_url_proxy.dart';
 import '../../data/datasources/user_books_datasource.dart';
 import '../../domain/entities/gutendex_book.dart';
 import '../widgets/loading_widget.dart';
@@ -420,7 +421,7 @@ class _GlassPageState extends State<GlassPage> {
     final coverUrl = book.coverImageUrl;
     if (coverUrl != null && coverUrl.isNotEmpty) {
       return Image.network(
-        coverUrl,
+        proxiedWebUrl(coverUrl),
         width: double.infinity,
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) {
@@ -443,4 +444,3 @@ class _GlassPageState extends State<GlassPage> {
     );
   }
 }
-

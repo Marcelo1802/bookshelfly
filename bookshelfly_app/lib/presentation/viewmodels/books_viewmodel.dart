@@ -9,6 +9,7 @@ import '../../domain/repositories/banner_repository.dart';
 import '../../core/errors/failures.dart';
 
 class BooksViewModel extends ChangeNotifier {
+  static const int _booksPageSize = 12;
   final GetBooks getBooks;
   final SearchBooks searchBooks;
   final GetBookById getBookById;
@@ -58,7 +59,7 @@ class BooksViewModel extends ChangeNotifier {
     _setLoading(true);
     _clearError();
 
-    final result = await getBooks(page: _currentPage);
+    final result = await getBooks(page: _currentPage, pageSize: _booksPageSize);
     result.fold(
       (failure) => _setError(_mapFailureToMessage(failure)),
       (newBooks) {
@@ -68,7 +69,7 @@ class BooksViewModel extends ChangeNotifier {
           _books.addAll(newBooks);
         }
         
-        if (newBooks.length < 32) {
+        if (newBooks.length < _booksPageSize) {
           _hasMoreBooks = false;
         } else {
           _currentPage++;
@@ -141,12 +142,16 @@ class BooksViewModel extends ChangeNotifier {
     _setLoading(true);
     _clearError();
 
-    final result = await searchBooks(query, page: _currentPage);
+    final result = await searchBooks(
+      query,
+      page: _currentPage,
+      pageSize: _booksPageSize,
+    );
     result.fold(
       (failure) => _setError(_mapFailureToMessage(failure)),
       (searchResults) {
         _books = searchResults;
-        if (searchResults.length < 32) {
+        if (searchResults.length < _booksPageSize) {
           _hasMoreBooks = false;
         } else {
           _currentPage++;
@@ -162,12 +167,16 @@ class BooksViewModel extends ChangeNotifier {
     if (_isLoading || !_hasMoreBooks) return;
 
     if (_searchQuery.isNotEmpty) {
-      final result = await searchBooks(_searchQuery, page: _currentPage);
+      final result = await searchBooks(
+        _searchQuery,
+        page: _currentPage,
+        pageSize: _booksPageSize,
+      );
       result.fold(
         (failure) => _setError(_mapFailureToMessage(failure)),
         (newBooks) {
           _books.addAll(newBooks);
-          if (newBooks.length < 32) {
+          if (newBooks.length < _booksPageSize) {
             _hasMoreBooks = false;
           } else {
             _currentPage++;

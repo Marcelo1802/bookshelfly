@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../domain/entities/gutendex_book.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/utils/web_url_proxy.dart';
 
 class BookCard extends StatelessWidget {
   final GutendexBook book;
@@ -116,10 +117,11 @@ class BookCard extends StatelessWidget {
 
   Widget _buildBookCover() {
     if (book.coverImageUrl != null) {
+      final coverUrl = proxiedWebUrl(book.coverImageUrl!);
       return ClipRRect(
         borderRadius: BorderRadius.circular(8),
         child: Image.network(
-          book.coverImageUrl!,
+          coverUrl,
           width: 60,
           height: 80,
           fit: BoxFit.cover,

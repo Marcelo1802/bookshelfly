@@ -52,7 +52,10 @@ Future<void> init() async {
   );
   
   sl.registerLazySingleton<BookContentDataSource>(
-    () => BookContentDataSourceImpl(client: sl()),
+    () => BookContentDataSourceImpl(
+      client: sl(),
+      sharedPreferences: sl(),
+    ),
   );
 
   // Repository

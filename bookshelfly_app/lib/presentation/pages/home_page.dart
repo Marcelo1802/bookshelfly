@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../domain/entities/gutendex_book.dart';
+import '../../core/utils/web_url_proxy.dart';
 import '../viewmodels/books_viewmodel.dart';
 import '../widgets/loading_widget.dart';
 import 'book_reader_page.dart';
@@ -48,10 +49,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       if (viewModel.brazilianBooks.isEmpty) {
         viewModel.loadBrazilianBooks();
       }
-      // Carregar todos os livros se necessário
-      if (viewModel.books.isEmpty) {
-        viewModel.loadBooks(refresh: true);
-      }
     });
   }
 
@@ -64,8 +61,14 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
   void _startAutoSlide(List<GutendexBook> books) {
     _timer?.cancel();
+    if (books.isNotEmpty && mounted) {
+      setState(() {
+        _featuredBooks = books;
+        _currentFeaturedIndex = 0;
+      });
+    }
+
     if (books.length > 1) {
-      _featuredBooks = books;
       _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
         if (mounted) {
           setState(() {
@@ -83,20 +86,21 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       body: SafeArea(
         child: Consumer<BooksViewModel>(
           builder: (context, viewModel, child) {
-            if (viewModel.isLoading && viewModel.books.isEmpty) {
+            final featuredBooks = viewModel.featuredBooks;
+            final brazilianBooks = viewModel.brazilianBooks;
+            final popularBooks = viewModel.books;
+            final hasHomeContent =
+                featuredBooks.isNotEmpty || brazilianBooks.isNotEmpty;
+
+            if (!hasHomeContent &&
+                (viewModel.isLoadingFeatured || viewModel.isLoadingBrazilian)) {
               return const Center(child: LoadingWidget());
             }
 
-            final books = viewModel.books;
-            if (books.isEmpty) {
+            if (!hasHomeContent) {
               return _buildEmptyState();
             }
 
-            // Usar livros em destaque do cache se disponível
-            final featuredBooks = viewModel.featuredBooks.isNotEmpty 
-                ? viewModel.featuredBooks 
-                : books.take(5).toList();
-            
             // Iniciar auto slide apenas uma vez
             if (_featuredBooks.isEmpty && featuredBooks.isNotEmpty) {
               WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -114,11 +118,15 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                   _buildHorizontalBookList(viewModel.brazilianBooks),
                   _buildDivider(),
                 ],
-                _buildSectionTitle('Popular'),
-                _buildHorizontalBookList(books.take(10).toList()),
-                _buildDivider(),
-                _buildSectionTitle('Clássicos'),
-                _buildHorizontalBookList(books.skip(10).take(10).toList()),
+                if (popularBooks.isNotEmpty) ...[
+                  _buildSectionTitle('Popular'),
+                  _buildHorizontalBookList(popularBooks.take(10).toList()),
+                  _buildDivider(),
+                  if (popularBooks.length > 10) ...[
+                    _buildSectionTitle('Clássicos'),
+                    _buildHorizontalBookList(popularBooks.skip(10).take(10).toList()),
+                  ],
+                ],
                 const SliverPadding(padding: EdgeInsets.only(bottom: 100)),
               ],
             );
@@ -129,9 +137,12 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   }
 
   Widget _buildFeaturedCard(List<GutendexBook> books) {
-    if (_featuredBooks.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
-    
-    final currentBook = _featuredBooks[_currentFeaturedIndex];
+    final sourceBooks = _featuredBooks.isNotEmpty ? _featuredBooks : books;
+    if (sourceBooks.isEmpty) {
+      return const SliverToBoxAdapter(child: SizedBox.shrink());
+    }
+
+    final currentBook = sourceBooks[_currentFeaturedIndex % sourceBooks.length];
     
     return SliverToBoxAdapter(
       child: Container(
@@ -273,7 +284,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                 borderRadius: BorderRadius.circular(12),
                 child: currentBook.coverImageUrl != null
                     ? Image.network(
-                        currentBook.coverImageUrl!,
+                        proxiedWebUrl(currentBook.coverImageUrl!),
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
                           return Container(
@@ -412,7 +423,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                           borderRadius: BorderRadius.circular(12),
                           child: book.coverImageUrl != null
                               ? Image.network(
-                                  book.coverImageUrl!,
+                                  proxiedWebUrl(book.coverImageUrl!),
                                   width: double.infinity,
                                   fit: BoxFit.cover,
                                   errorBuilder: (context, error, stackTrace) {

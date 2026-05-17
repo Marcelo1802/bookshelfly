@@ -6,6 +6,7 @@ import '../../core/di/injection_container.dart';
 import '../../data/datasources/user_books_datasource.dart';
 import '../../data/models/gutendex_book_model.dart';
 import '../../domain/entities/gutendex_book.dart';
+import '../../core/utils/web_url_proxy.dart';
 import '../widgets/book_card.dart';
 import '../widgets/loading_widget.dart';
 import '../widgets/error_widget.dart' as custom;
@@ -26,7 +27,10 @@ class _BooksPageState extends State<BooksPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<BooksViewModel>().loadBooks(refresh: true);
+      final viewModel = context.read<BooksViewModel>();
+      if (viewModel.books.isEmpty) {
+        viewModel.loadBooks(refresh: true);
+      }
     });
     
     _scrollController.addListener(_onScroll);
@@ -230,7 +234,7 @@ class _BookDetailsSheetState extends State<BookDetailsSheet> {
                         ClipRRect(
                           borderRadius: BorderRadius.circular(8),
                           child: Image.network(
-                            widget.book.coverImageUrl!,
+                            proxiedWebUrl(widget.book.coverImageUrl!),
                             width: 120,
                             height: 180,
                             fit: BoxFit.cover,

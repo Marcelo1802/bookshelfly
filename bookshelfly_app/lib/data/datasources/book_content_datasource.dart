@@ -1,8 +1,8 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:http/http.dart' as http;
-import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/errors/exceptions.dart';
+import '../../core/utils/web_url_proxy.dart';
 
 abstract class BookContentDataSource {
   Future<String> getBookContent(String url);
@@ -12,14 +12,18 @@ abstract class BookContentDataSource {
 
 class BookContentDataSourceImpl implements BookContentDataSource {
   final http.Client client;
+  final SharedPreferences sharedPreferences;
   static const String _cachePrefix = 'book_content_';
 
-  BookContentDataSourceImpl({required this.client});
+  BookContentDataSourceImpl({
+    required this.client,
+    required this.sharedPreferences,
+  });
 
   @override
   Future<String> getBookContent(String url) async {
     try {
-      final response = await client.get(Uri.parse(url));
+      final response = await client.get(Uri.parse(proxiedWebUrl(url)));
       
       if (response.statusCode == 200) {
         // Tentar decodificar como UTF-8 primeiro
@@ -41,14 +45,15 @@ class BookContentDataSourceImpl implements BookContentDataSource {
   @override
   Future<String> getCachedBookContent(int bookId) async {
     try {
-      final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/$_cachePrefix$bookId.txt');
-      
-      if (await file.exists()) {
-        return await file.readAsString();
-      } else {
-        throw CacheException('Conteúdo do livro não encontrado no cache');
+      final cachedContent = sharedPreferences.getString(
+        '$_cachePrefix$bookId',
+      );
+
+      if (cachedContent != null && cachedContent.isNotEmpty) {
+        return cachedContent;
       }
+
+      throw CacheException('Conteúdo do livro não encontrado no cache');
     } catch (e) {
       if (e is CacheException) rethrow;
       throw CacheException('Erro ao ler cache: $e');
@@ -58,9 +63,7 @@ class BookContentDataSourceImpl implements BookContentDataSource {
   @override
   Future<void> cacheBookContent(int bookId, String content) async {
     try {
-      final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/$_cachePrefix$bookId.txt');
-      await file.writeAsString(content);
+      await sharedPreferences.setString('$_cachePrefix$bookId', content);
     } catch (e) {
       throw CacheException('Erro ao salvar cache: $e');
     }
