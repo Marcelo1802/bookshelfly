@@ -14,6 +14,8 @@ if [ ! -x "${FLUTTER_ROOT}/bin/flutter" ]; then
   tar -xf "/tmp/${FLUTTER_ARCHIVE}" -C "${HOME}"
 fi
 
+git config --global --add safe.directory "${FLUTTER_ROOT}"
+
 export PATH="${FLUTTER_ROOT}/bin:${PATH}"
 
 cd bookshelfly_app
