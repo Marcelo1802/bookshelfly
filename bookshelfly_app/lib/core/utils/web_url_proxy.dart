@@ -19,10 +19,8 @@ String proxiedWebUrl(String url) {
 
   final normalizedUri = uri.scheme.isEmpty ? uri.replace(scheme: 'https') : uri;
   final proxyUri = Uri(
-    path: '/proxy',
-    queryParameters: {
-      'url': normalizedUri.toString(),
-    },
+    path: '/gutenberg${normalizedUri.path}',
+    queryParameters: normalizedUri.hasQuery ? normalizedUri.queryParameters : null,
   );
 
   return proxyUri.toString();

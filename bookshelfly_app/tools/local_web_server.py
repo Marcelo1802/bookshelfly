@@ -5,7 +5,7 @@ import os
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.error import HTTPError, URLError
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, urlparse, urlunparse
 from urllib.request import Request, urlopen
 
 
@@ -24,7 +24,11 @@ class FlutterWebProxyHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
         parsed = urlparse(self.path)
         if parsed.path == "/proxy":
-            self._handle_proxy(parsed, send_body=True)
+            self._handle_legacy_proxy(parsed, send_body=True)
+            return
+
+        if parsed.path.startswith("/gutenberg/"):
+            self._handle_gutenberg_proxy(parsed, send_body=True)
             return
 
         if parsed.path in ("", "/"):
@@ -37,7 +41,11 @@ class FlutterWebProxyHandler(SimpleHTTPRequestHandler):
     def do_HEAD(self):
         parsed = urlparse(self.path)
         if parsed.path == "/proxy":
-            self._handle_proxy(parsed, send_body=False)
+            self._handle_legacy_proxy(parsed, send_body=False)
+            return
+
+        if parsed.path.startswith("/gutenberg/"):
+            self._handle_gutenberg_proxy(parsed, send_body=False)
             return
 
         if parsed.path in ("", "/"):
@@ -47,13 +55,30 @@ class FlutterWebProxyHandler(SimpleHTTPRequestHandler):
 
         return super().do_HEAD()
 
-    def _handle_proxy(self, parsed, send_body):
+    def _handle_legacy_proxy(self, parsed, send_body):
         query = parse_qs(parsed.query)
         target_url = query.get("url", [None])[0]
 
         if not target_url:
             self.send_error(400, "Missing url parameter")
             return
+
+        self._proxy_target(target_url, send_body)
+
+    def _handle_gutenberg_proxy(self, parsed, send_body):
+        target_url = urlunparse(
+            (
+                "https",
+                "www.gutenberg.org",
+                parsed.path.removeprefix("/gutenberg"),
+                "",
+                parsed.query,
+                "",
+            )
+        )
+        self._proxy_target(target_url, send_body)
+
+    def _proxy_target(self, target_url, send_body):
 
         target = urlparse(target_url)
         if target.scheme not in {"http", "https"} or target.hostname not in ALLOWED_PROXY_HOSTS:
