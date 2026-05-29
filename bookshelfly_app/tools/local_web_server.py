@@ -114,6 +114,10 @@ class FlutterWebProxyHandler(SimpleHTTPRequestHandler):
             self.send_error(502, f"Proxy error: {exc.reason}")
 
     def end_headers(self):
+        parsed = urlparse(self.path)
+        if parsed.path in ("/", "/index.html", "/flutter_bootstrap.js", "/flutter_service_worker.js"):
+            self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+            self.send_header("Pragma", "no-cache")
         self.send_header("Access-Control-Allow-Origin", "*")
         super().end_headers()
 
