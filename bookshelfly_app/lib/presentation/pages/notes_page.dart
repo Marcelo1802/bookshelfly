@@ -4,6 +4,7 @@ import '../../core/di/injection_container.dart';
 import '../../data/datasources/notes_datasource.dart';
 import '../../data/models/note_model.dart';
 import 'dart:math';
+import '../widgets/loading_widget.dart';
 
 class NotesPage extends StatefulWidget {
   const NotesPage({super.key});
@@ -168,22 +169,33 @@ class _NotesPageState extends State<NotesPage> {
             // Lista de anotações
             Expanded(
               child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
+                  ? const LoadingWidget()
                   : _notes.isEmpty
                       ? _buildEmptyState()
                       : RefreshIndicator(
                           onRefresh: _loadNotes,
-                          child: GridView.builder(
-                            padding: const EdgeInsets.all(20),
-                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              crossAxisSpacing: 16,
-                              mainAxisSpacing: 16,
-                              childAspectRatio: 0.85,
-                            ),
-                            itemCount: _notes.length,
-                            itemBuilder: (context, index) {
-                              return _buildNoteCard(_notes[index]);
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              final width = constraints.maxWidth;
+                              final isWebWide = width >= 900;
+                              final childAspectRatio = isWebWide ? 1.15 : 0.85;
+
+                              return GridView.builder(
+                                padding: const EdgeInsets.all(20),
+                                gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                                  maxCrossAxisExtent: isWebWide ? 320 : 260,
+                                  crossAxisSpacing: 16,
+                                  mainAxisSpacing: 16,
+                                  childAspectRatio: childAspectRatio,
+                                ),
+                                itemCount: _notes.length,
+                                itemBuilder: (context, index) {
+                                  return _buildNoteCard(
+                                    _notes[index],
+                                    isWebWide: isWebWide,
+                                  );
+                                },
+                              );
                             },
                           ),
                         ),
@@ -245,7 +257,7 @@ class _NotesPageState extends State<NotesPage> {
     );
   }
 
-  Widget _buildNoteCard(NoteModel note) {
+  Widget _buildNoteCard(NoteModel note, {bool isWebWide = false}) {
     final colors = [
       Colors.blue,           // 1. Azul
       Colors.red,            // 2. Vermelho
@@ -292,7 +304,7 @@ class _NotesPageState extends State<NotesPage> {
                   Text(
                     note.title,
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: isWebWide ? 15 : 16,
                       fontWeight: FontWeight.bold,
                       color: color,
                     ),
@@ -304,11 +316,11 @@ class _NotesPageState extends State<NotesPage> {
                     child: Text(
                       note.content,
                       style: TextStyle(
-                        fontSize: 13,
+                        fontSize: isWebWide ? 12 : 13,
                         color: AppColors.greyDark,
                         height: 1.4,
                       ),
-                      maxLines: 6,
+                      maxLines: isWebWide ? 7 : 6,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -316,7 +328,7 @@ class _NotesPageState extends State<NotesPage> {
                   Text(
                     _formatDate(note.updatedAt),
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: isWebWide ? 10 : 11,
                       color: AppColors.grey,
                     ),
                   ),

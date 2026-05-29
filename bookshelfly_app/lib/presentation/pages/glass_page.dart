@@ -221,22 +221,33 @@ class _GlassPageState extends State<GlassPage> {
       );
     }
     
-    return GridView.builder(
-      padding: const EdgeInsets.all(20),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-        childAspectRatio: 0.7,
-      ),
-      itemCount: books.length,
-      itemBuilder: (context, index) {
-        return _buildBookGridItem(books[index]);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final isWebWide = width >= 900;
+        final crossAxisCount = isWebWide
+            ? (width / 220).floor().clamp(3, 6)
+            : 2;
+        final childAspectRatio = isWebWide ? 0.62 : 0.7;
+
+        return GridView.builder(
+          padding: const EdgeInsets.all(20),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            childAspectRatio: childAspectRatio,
+          ),
+          itemCount: books.length,
+          itemBuilder: (context, index) {
+            return _buildBookGridItem(books[index], isWebWide: isWebWide);
+          },
+        );
       },
     );
   }
 
-  Widget _buildBookGridItem(GutendexBook book) {
+  Widget _buildBookGridItem(GutendexBook book, {bool isWebWide = false}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -303,9 +314,9 @@ class _GlassPageState extends State<GlassPage> {
         const SizedBox(height: 8),
         Text(
           book.title,
-          style: const TextStyle(
+          style: TextStyle(
             color: AppColors.black,
-            fontSize: 14,
+            fontSize: isWebWide ? 13 : 14,
             fontWeight: FontWeight.w600,
           ),
           maxLines: 2,
@@ -318,7 +329,7 @@ class _GlassPageState extends State<GlassPage> {
               : 'Autor Desconhecido',
           style: TextStyle(
             color: AppColors.grey,
-            fontSize: 12,
+            fontSize: isWebWide ? 11 : 12,
           ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,

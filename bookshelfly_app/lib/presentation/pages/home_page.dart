@@ -17,6 +17,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
+  static const int _sectionBookCount = 6;
   Timer? _timer;
   int _currentFeaturedIndex = 0;
   List<GutendexBook> _featuredBooks = [];
@@ -48,6 +49,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       // Carregar livros brasileiros
       if (viewModel.brazilianBooks.isEmpty) {
         viewModel.loadBrazilianBooks();
+      }
+      // Carregar seções Popular e Clássicos em background
+      if (viewModel.books.isEmpty) {
+        viewModel.loadBooks(refresh: true);
       }
     });
   }
@@ -110,22 +115,41 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
             return CustomScrollView(
               slivers: [
-                _buildFeaturedCard(featuredBooks),
+                featuredBooks.isNotEmpty
+                    ? _buildFeaturedCard(featuredBooks)
+                    : _buildFeaturedLoadingCard(),
                 _buildDivider(),
-                // Seção Brasileiros
                 if (viewModel.brazilianBooks.isNotEmpty) ...[
                   _buildSectionTitle('🇧🇷 Brasileiros'),
                   _buildHorizontalBookList(viewModel.brazilianBooks),
                   _buildDivider(),
+                ] else if (viewModel.isLoadingBrazilian) ...[
+                  _buildSectionTitle('🇧🇷 Brasileiros'),
+                  _buildHorizontalLoadingList(),
+                  _buildDivider(),
                 ],
                 if (popularBooks.isNotEmpty) ...[
                   _buildSectionTitle('Popular'),
-                  _buildHorizontalBookList(popularBooks.take(10).toList()),
+                  _buildHorizontalBookList(popularBooks.take(_sectionBookCount).toList()),
                   _buildDivider(),
-                  if (popularBooks.length > 10) ...[
+                  if (popularBooks.length > _sectionBookCount) ...[
                     _buildSectionTitle('Clássicos'),
-                    _buildHorizontalBookList(popularBooks.skip(10).take(10).toList()),
+                    _buildHorizontalBookList(
+                      popularBooks
+                          .skip(_sectionBookCount)
+                          .take(_sectionBookCount)
+                          .toList(),
+                    ),
+                  ] else if (viewModel.isLoading) ...[
+                    _buildSectionTitle('Clássicos'),
+                    _buildHorizontalLoadingList(),
                   ],
+                ] else if (viewModel.isLoading) ...[
+                  _buildSectionTitle('Popular'),
+                  _buildHorizontalLoadingList(),
+                  _buildDivider(),
+                  _buildSectionTitle('Clássicos'),
+                  _buildHorizontalLoadingList(),
                 ],
                 const SliverPadding(padding: EdgeInsets.only(bottom: 100)),
               ],
@@ -373,6 +397,54 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     );
   }
 
+  Widget _buildFeaturedLoadingCard() {
+    return SliverToBoxAdapter(
+      child: Container(
+        margin: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(20),
+        height: 220,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              AppColors.primary.withValues(alpha: 0.75),
+              AppColors.primaryDark.withValues(alpha: 0.75),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildLoadingBar(width: 110, height: 18, color: AppColors.white.withValues(alpha: 0.35)),
+                  const SizedBox(height: 12),
+                  _buildLoadingBar(width: 240, height: 34, color: AppColors.white.withValues(alpha: 0.45)),
+                  const SizedBox(height: 10),
+                  _buildLoadingBar(width: 190, height: 20, color: AppColors.white.withValues(alpha: 0.3)),
+                  const SizedBox(height: 20),
+                  _buildLoadingBar(width: 96, height: 42, color: Colors.red.withValues(alpha: 0.7)),
+                ],
+              ),
+            ),
+            const SizedBox(width: 20),
+            Container(
+              width: 120,
+              height: 180,
+              decoration: BoxDecoration(
+                color: AppColors.white.withValues(alpha: 0.16),
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildSectionTitle(String title) {
     return SliverToBoxAdapter(
       child: Padding(
@@ -480,6 +552,57 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             );
           },
         ),
+      ),
+    );
+  }
+
+  Widget _buildHorizontalLoadingList() {
+    return SliverToBoxAdapter(
+      child: SizedBox(
+        height: 220,
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 15),
+          itemCount: 6,
+          itemBuilder: (context, index) {
+            return Container(
+              width: 140,
+              margin: const EdgeInsets.symmetric(horizontal: 5),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.greyLight,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  _buildLoadingBar(width: 110, height: 14),
+                  const SizedBox(height: 6),
+                  _buildLoadingBar(width: 80, height: 12),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoadingBar({
+    required double width,
+    required double height,
+    Color? color,
+  }) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: color ?? AppColors.greyLight,
+        borderRadius: BorderRadius.circular(height / 2),
       ),
     );
   }

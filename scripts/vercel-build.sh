@@ -21,4 +21,4 @@ export PATH="${FLUTTER_ROOT}/bin:${PATH}"
 cd bookshelfly_app
 flutter config --enable-web
 flutter pub get
-flutter build web --release
+flutter build web --release --wasm

@@ -5,6 +5,7 @@ import '../../core/di/injection_container.dart';
 import '../../domain/usecases/get_book_content.dart';
 import '../../core/utils/book_paginator.dart';
 import '../../data/datasources/reading_progress_datasource.dart';
+import '../widgets/loading_widget.dart';
 import '../widgets/reading_settings_dialog.dart';
 
 class BookReaderPage extends StatefulWidget {
@@ -265,16 +266,7 @@ class _BookReaderPageState extends State<BookReaderPage> {
 
   Widget _buildBody() {
     if (_isLoading) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text('Carregando livro...'),
-          ],
-        ),
-      );
+      return const LoadingWidget();
     }
 
     if (_error != null) {
@@ -322,7 +314,7 @@ class _BookReaderPageState extends State<BookReaderPage> {
             controller: _pageController,
             onPageChanged: _onPageChanged,
             itemCount: _pages.length,
-            physics: _canNavigateToNext() ? const ClampingScrollPhysics() : const NeverScrollableScrollPhysics(),
+            physics: const NeverScrollableScrollPhysics(),
             itemBuilder: (context, index) {
               final page = _pages[index];
               return Container(
@@ -869,16 +861,23 @@ class _BookReaderPageState extends State<BookReaderPage> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: isEnabled 
-            ? (_isDarkMode ? AppColors.grey : AppColors.greyLight)
-            : Colors.transparent,
+        color: isEnabled ? Colors.red : Colors.transparent,
         borderRadius: BorderRadius.circular(20),
+        boxShadow: isEnabled
+            ? [
+                BoxShadow(
+                  color: Colors.red.withOpacity(0.25),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ]
+            : null,
       ),
       child: IconButton(
         onPressed: onPressed,
         icon: Icon(
           icon,
-          color: isEnabled ? _textColor : AppColors.grey,
+          color: isEnabled ? AppColors.white : AppColors.grey,
           size: 24,
         ),
         padding: const EdgeInsets.all(8),
