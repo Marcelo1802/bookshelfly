@@ -18,6 +18,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
   static const int _sectionBookCount = 6;
+  static const int _homeBooksPageSize = 12;
   Timer? _timer;
   int _currentFeaturedIndex = 0;
   List<GutendexBook> _featuredBooks = [];
@@ -52,7 +53,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       }
       // Carregar seções Popular e Clássicos em background
       if (viewModel.books.isEmpty) {
-        viewModel.loadBooks(refresh: true);
+        viewModel.loadBooks(
+          refresh: true,
+          pageSize: _homeBooksPageSize,
+        );
       }
     });
   }

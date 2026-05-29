@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../domain/entities/gutendex_book.dart';
@@ -21,6 +23,8 @@ class BookReaderPage extends StatefulWidget {
 }
 
 class _BookReaderPageState extends State<BookReaderPage> {
+  static const int _pagesPerBatch = 20;
+
   final PageController _pageController = PageController();
   String _content = '';
   bool _isLoading = true;
@@ -30,6 +34,9 @@ class _BookReaderPageState extends State<BookReaderPage> {
   List<BookPage> _pages = [];
   int _currentPage = 0;
   int _totalPages = 0;
+  int _nextPageStartIndex = 0;
+  bool _isPaginationComplete = false;
+  bool _isPaginatingMore = false;
   
   // Configurações de leitura
   double _fontSize = 18.0;
@@ -80,11 +87,13 @@ class _BookReaderPageState extends State<BookReaderPage> {
         (content) async {
           final cleanedContent = _cleanContent(content);
           await _loadReadingProgress();
-          _paginateContent(cleanedContent);
+          _content = cleanedContent;
+          await _prepareReader();
+          if (!mounted) return;
           setState(() {
             _isLoading = false;
-            _content = cleanedContent;
           });
+          _scheduleBackgroundPagination();
         },
       );
     } catch (e) {
@@ -117,31 +126,107 @@ class _BookReaderPageState extends State<BookReaderPage> {
     return cleaned;
   }
 
-  void _paginateContent(String content) {
-    if (mounted) {
-      _pages = BookPaginator.paginateText(
-        content,
+  Future<void> _prepareReader() async {
+    _pages = [];
+    _totalPages = 0;
+    _nextPageStartIndex = 0;
+    _isPaginationComplete = false;
+    _isPaginatingMore = false;
+
+    final initialTargetPage = _currentPage > 0 ? _currentPage : _pagesPerBatch - 1;
+    await _ensurePageLoaded(initialTargetPage);
+
+    if (_isPaginationComplete) {
+      _totalPages = _pages.length;
+    }
+
+    if (_currentPage >= _pages.length) {
+      _currentPage = _pages.isEmpty ? 0 : _pages.length - 1;
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_pageController.hasClients && _currentPage > 0) {
+        _pageController.jumpToPage(_currentPage);
+      }
+    });
+  }
+
+  Future<bool> _ensurePageLoaded(int targetPage) async {
+    if (_content.isEmpty) {
+      return false;
+    }
+
+    while (!_isPaginationComplete && _pages.length <= targetPage) {
+      final appended = await _appendNextPageBatch();
+      if (!appended) {
+        break;
+      }
+    }
+
+    if (_isPaginationComplete) {
+      _totalPages = _pages.length;
+    }
+
+    return _pages.length > targetPage;
+  }
+
+  Future<bool> _appendNextPageBatch() async {
+    if (!mounted || _content.isEmpty || _isPaginationComplete || _isPaginatingMore) {
+      return false;
+    }
+
+    _isPaginatingMore = true;
+
+    try {
+      final chunk = BookPaginator.paginateChunk(
+        _content,
         context,
+        startIndex: _nextPageStartIndex,
+        startPageNumber: _pages.length + 1,
+        maxPages: _pagesPerBatch,
         fontSize: _fontSize,
         lineHeight: _lineHeight,
       );
-      _totalPages = _pages.length;
-      
-      // Ir para a página salva ou primeira página
-      if (_currentPage >= _totalPages) {
-        _currentPage = 0;
+
+      if (!mounted) {
+        return false;
       }
-      
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (_pageController.hasClients && _currentPage > 0) {
-          _pageController.animateToPage(
-            _currentPage,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-          );
+
+      if (chunk.pages.isEmpty) {
+        _isPaginationComplete = true;
+        _totalPages = _pages.length;
+        return false;
+      }
+
+      setState(() {
+        _pages = [..._pages, ...chunk.pages];
+        _totalPages = _pages.length;
+        _nextPageStartIndex = chunk.nextStartIndex;
+        _isPaginationComplete = !chunk.hasMorePages;
+        if (_isPaginationComplete) {
+          _totalPages = _pages.length;
         }
       });
+
+      return true;
+    } finally {
+      _isPaginatingMore = false;
     }
+  }
+
+  void _scheduleBackgroundPagination() {
+    unawaited(
+      Future<void>(() async {
+        while (mounted && !_isPaginationComplete) {
+          final appended = await _appendNextPageBatch();
+          if (!appended) {
+            break;
+          }
+
+          await Future<void>.delayed(Duration.zero);
+        }
+      }),
+    );
   }
 
   Future<void> _loadReadingProgress() async {
@@ -187,7 +272,7 @@ class _BookReaderPageState extends State<BookReaderPage> {
   }
 
   void _goToNextPage() {
-    if (_currentPage < _totalPages - 1) {
+    if (_canMoveForward()) {
       // Verificar se a página atual termina com ponto final
       if (_currentPage < _pages.length) {
         final currentPageContent = _pages[_currentPage].content;
@@ -196,11 +281,8 @@ class _BookReaderPageState extends State<BookReaderPage> {
           return;
         }
       }
-      
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
+
+      unawaited(_navigateForward());
     }
   }
 
@@ -230,11 +312,21 @@ class _BookReaderPageState extends State<BookReaderPage> {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            if (_totalPages > 0)
+            if (_pages.isNotEmpty)
               Text(
-                'Página ${_currentPage + 1} de $_totalPages',
+                _isPaginationComplete
+                    ? 'Página ${_currentPage + 1} de $_totalPages'
+                    : 'Página ${_currentPage + 1} de ${_pages.length}+',
                 style: const TextStyle(
                   fontSize: 12,
+                  fontWeight: FontWeight.normal,
+                ),
+              ),
+            if (!_isPaginationComplete)
+              const Text(
+                'Carregando mais páginas...',
+                style: TextStyle(
+                  fontSize: 10,
                   fontWeight: FontWeight.normal,
                 ),
               ),
@@ -468,7 +560,9 @@ class _BookReaderPageState extends State<BookReaderPage> {
                             ),
                           ),
                           Text(
-                            'Página ${_currentPage + 1} de $_totalPages',
+                            _isPaginationComplete
+                                ? 'Página ${_currentPage + 1} de $_totalPages'
+                                : 'Página ${_currentPage + 1} de ${_pages.length}+',
                             style: const TextStyle(
                               color: Colors.white70,
                               fontSize: 14,
@@ -583,7 +677,9 @@ class _BookReaderPageState extends State<BookReaderPage> {
                           child: _buildQuickNavButton(
                             icon: Icons.last_page,
                             label: 'Última',
-                            onPressed: () => _navigateToPage(_totalPages.toString(), pageController),
+                            onPressed: _isPaginationComplete
+                                ? () => _navigateToPage(_totalPages.toString(), pageController)
+                                : null,
                             isPrimary: false,
                           ),
                         ),
@@ -627,7 +723,7 @@ class _BookReaderPageState extends State<BookReaderPage> {
   Widget _buildQuickNavButton({
     required IconData icon,
     required String label,
-    required VoidCallback onPressed,
+    required VoidCallback? onPressed,
     required bool isPrimary,
   }) {
     return Container(
@@ -654,7 +750,7 @@ class _BookReaderPageState extends State<BookReaderPage> {
               children: [
                 Icon(
                   icon,
-                  color: _textColor,
+                  color: onPressed == null ? _textColor.withOpacity(0.35) : _textColor,
                   size: 20,
                 ),
                 const SizedBox(width: 8),
@@ -663,7 +759,7 @@ class _BookReaderPageState extends State<BookReaderPage> {
                     label,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: _textColor,
+                      color: onPressed == null ? _textColor.withOpacity(0.35) : _textColor,
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                     ),
@@ -723,13 +819,23 @@ class _BookReaderPageState extends State<BookReaderPage> {
   }
 
   void _navigateToPage(String pageText, TextEditingController controller) {
+    unawaited(_handleQuickNavigation(pageText, controller));
+  }
+
+  Future<void> _handleQuickNavigation(
+    String pageText,
+    TextEditingController controller,
+  ) async {
     final pageNumber = int.tryParse(pageText);
-    
-    if (pageNumber == null || pageNumber < 1 || pageNumber > _totalPages) {
+    final maxKnownPage = _isPaginationComplete
+        ? _totalPages
+        : (_pages.isNotEmpty ? _pages.length : _pagesPerBatch);
+
+    if (pageNumber == null || pageNumber < 1) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Digite um número válido entre 1 e $_totalPages',
+            'Digite um número válido entre 1 e $maxKnownPage',
             style: const TextStyle(color: AppColors.white),
           ),
           backgroundColor: AppColors.error,
@@ -754,6 +860,49 @@ class _BookReaderPageState extends State<BookReaderPage> {
       }
     }
 
+    if (_isPaginationComplete && pageNumber > _totalPages) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Digite um número válido entre 1 e $_totalPages',
+            style: const TextStyle(color: AppColors.white),
+          ),
+          backgroundColor: AppColors.error,
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+      );
+      return;
+    }
+
+    if (!_isPaginationComplete && targetPage >= _pages.length) {
+      final pageLoaded = await _ensurePageLoaded(targetPage);
+      if (!mounted) {
+        return;
+      }
+
+      if (!pageLoaded) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text(
+              'Ainda estamos preparando mais páginas. Tente novamente em instantes.',
+              style: TextStyle(color: AppColors.white),
+            ),
+            backgroundColor: AppColors.error,
+            duration: const Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        );
+        return;
+      }
+    }
+
     Navigator.of(context).pop();
     
     _pageController.animateToPage(
@@ -770,7 +919,7 @@ class _BookReaderPageState extends State<BookReaderPage> {
   }
 
   Widget _buildPageControls() {
-    if (_totalPages <= 1) return const SizedBox.shrink();
+    if (_pages.length <= 1 && _isPaginationComplete) return const SizedBox.shrink();
     
     return Container(
       margin: const EdgeInsets.all(16),
@@ -825,7 +974,7 @@ class _BookReaderPageState extends State<BookReaderPage> {
                     ),
                   ),
                   Text(
-                    ' / $_totalPages',
+                    ' / ${_isPaginationComplete ? _totalPages : '${_pages.length}+'}',
                     style: TextStyle(
                       fontSize: 14,
                       color: _textColor.withOpacity(0.7),
@@ -845,12 +994,40 @@ class _BookReaderPageState extends State<BookReaderPage> {
           // Botão Página Seguinte
           _buildMenuButton(
             icon: Icons.chevron_right,
-            onPressed: (_currentPage < _totalPages - 1 && _canNavigateToNext()) ? _goToNextPage : null,
-            isEnabled: (_currentPage < _totalPages - 1 && _canNavigateToNext()),
+            onPressed: _canMoveForward() ? _goToNextPage : null,
+            isEnabled: _canMoveForward(),
           ),
         ],
       ),
     );
+  }
+
+  bool _canMoveForward() {
+    if (!_canNavigateToNext()) {
+      return false;
+    }
+
+    if (_currentPage < _pages.length - 1) {
+      return true;
+    }
+
+    return !_isPaginationComplete;
+  }
+
+  Future<void> _navigateForward() async {
+    if (_currentPage >= _pages.length - 1 && !_isPaginationComplete) {
+      final appended = await _appendNextPageBatch();
+      if (!mounted || !appended) {
+        return;
+      }
+    }
+
+    if (_pageController.hasClients && _currentPage < _pages.length - 1) {
+      await _pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
   }
 
 

@@ -22,6 +22,8 @@ class BooksPage extends StatefulWidget {
 }
 
 class _BooksPageState extends State<BooksPage> {
+  static const int _booksPageSize = 7;
+
   final ScrollController _scrollController = ScrollController();
 
   @override
@@ -30,7 +32,7 @@ class _BooksPageState extends State<BooksPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final viewModel = context.read<BooksViewModel>();
       if (viewModel.books.isEmpty) {
-        viewModel.loadBooks(refresh: true);
+        viewModel.loadBooks(refresh: true, pageSize: _booksPageSize);
       }
     });
     
@@ -46,7 +48,7 @@ class _BooksPageState extends State<BooksPage> {
   void _onScroll() {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
-      context.read<BooksViewModel>().loadMoreBooks();
+      context.read<BooksViewModel>().loadMoreBooks(pageSize: _booksPageSize);
     }
   }
 
@@ -66,7 +68,7 @@ class _BooksPageState extends State<BooksPage> {
       ),
       body: Column(
         children: [
-          const SearchBarWidget(),
+          const SearchBarWidget(pageSize: _booksPageSize),
           Expanded(
             child: Consumer<BooksViewModel>(
               builder: (context, viewModel, child) {
@@ -77,7 +79,10 @@ class _BooksPageState extends State<BooksPage> {
                 if (viewModel.error != null && viewModel.books.isEmpty) {
                   return custom.ErrorWidget(
                     message: viewModel.error!,
-                    onRetry: () => viewModel.loadBooks(refresh: true),
+                    onRetry: () => viewModel.loadBooks(
+                      refresh: true,
+                      pageSize: _booksPageSize,
+                    ),
                   );
                 }
 
@@ -127,7 +132,10 @@ class _BooksPageState extends State<BooksPage> {
 
   Widget _buildBooksList(BooksViewModel viewModel) {
     return RefreshIndicator(
-      onRefresh: () => viewModel.loadBooks(refresh: true),
+      onRefresh: () => viewModel.loadBooks(
+        refresh: true,
+        pageSize: _booksPageSize,
+      ),
       child: ListView.builder(
         controller: _scrollController,
         padding: const EdgeInsets.all(16),

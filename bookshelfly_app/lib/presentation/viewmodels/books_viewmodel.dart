@@ -9,7 +9,7 @@ import '../../domain/repositories/banner_repository.dart';
 import '../../core/errors/failures.dart';
 
 class BooksViewModel extends ChangeNotifier {
-  static const int _booksPageSize = 12;
+  static const int _defaultBooksPageSize = 12;
   final GetBooks getBooks;
   final SearchBooks searchBooks;
   final GetBookById getBookById;
@@ -36,6 +36,7 @@ class BooksViewModel extends ChangeNotifier {
   String _searchQuery = '';
   int _currentPage = 1;
   bool _hasMoreBooks = true;
+  int _activeBooksPageSize = _defaultBooksPageSize;
 
   List<GutendexBook> get books => _books;
   List<GutendexBook> get featuredBooks => _featuredBooks;
@@ -47,7 +48,10 @@ class BooksViewModel extends ChangeNotifier {
   String get searchQuery => _searchQuery;
   bool get hasMoreBooks => _hasMoreBooks;
 
-  Future<void> loadBooks({bool refresh = false}) async {
+  Future<void> loadBooks({bool refresh = false, int? pageSize}) async {
+    final effectivePageSize = pageSize ?? _activeBooksPageSize;
+    _activeBooksPageSize = effectivePageSize;
+
     if (refresh) {
       _currentPage = 1;
       _books.clear();
@@ -59,7 +63,7 @@ class BooksViewModel extends ChangeNotifier {
     _setLoading(true);
     _clearError();
 
-    final result = await getBooks(page: _currentPage, pageSize: _booksPageSize);
+    final result = await getBooks(page: _currentPage, pageSize: effectivePageSize);
     result.fold(
       (failure) => _setError(_mapFailureToMessage(failure)),
       (newBooks) {
@@ -69,7 +73,7 @@ class BooksViewModel extends ChangeNotifier {
           _books.addAll(newBooks);
         }
         
-        if (newBooks.length < _booksPageSize) {
+        if (newBooks.length < effectivePageSize) {
           _hasMoreBooks = false;
         } else {
           _currentPage++;
@@ -127,10 +131,13 @@ class BooksViewModel extends ChangeNotifier {
     _setLoadingBrazilian(false);
   }
 
-  Future<void> performSearch(String query) async {
+  Future<void> performSearch(String query, {int? pageSize}) async {
+    final effectivePageSize = pageSize ?? _activeBooksPageSize;
+    _activeBooksPageSize = effectivePageSize;
+
     if (query.isEmpty) {
       _searchQuery = '';
-      await loadBooks(refresh: true);
+      await loadBooks(refresh: true, pageSize: effectivePageSize);
       return;
     }
 
@@ -145,13 +152,13 @@ class BooksViewModel extends ChangeNotifier {
     final result = await searchBooks(
       query,
       page: _currentPage,
-      pageSize: _booksPageSize,
+      pageSize: effectivePageSize,
     );
     result.fold(
       (failure) => _setError(_mapFailureToMessage(failure)),
       (searchResults) {
         _books = searchResults;
-        if (searchResults.length < _booksPageSize) {
+        if (searchResults.length < effectivePageSize) {
           _hasMoreBooks = false;
         } else {
           _currentPage++;
@@ -163,20 +170,23 @@ class BooksViewModel extends ChangeNotifier {
     _setLoading(false);
   }
 
-  Future<void> loadMoreBooks() async {
+  Future<void> loadMoreBooks({int? pageSize}) async {
     if (_isLoading || !_hasMoreBooks) return;
+
+    final effectivePageSize = pageSize ?? _activeBooksPageSize;
+    _activeBooksPageSize = effectivePageSize;
 
     if (_searchQuery.isNotEmpty) {
       final result = await searchBooks(
         _searchQuery,
         page: _currentPage,
-        pageSize: _booksPageSize,
+        pageSize: effectivePageSize,
       );
       result.fold(
         (failure) => _setError(_mapFailureToMessage(failure)),
         (newBooks) {
           _books.addAll(newBooks);
-          if (newBooks.length < _booksPageSize) {
+          if (newBooks.length < effectivePageSize) {
             _hasMoreBooks = false;
           } else {
             _currentPage++;
@@ -185,7 +195,7 @@ class BooksViewModel extends ChangeNotifier {
         },
       );
     } else {
-      await loadBooks();
+      await loadBooks(pageSize: effectivePageSize);
     }
   }
 

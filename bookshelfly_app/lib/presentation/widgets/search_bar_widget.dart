@@ -4,7 +4,12 @@ import '../viewmodels/books_viewmodel.dart';
 import '../../core/constants/app_colors.dart';
 
 class SearchBarWidget extends StatefulWidget {
-  const SearchBarWidget({super.key});
+  final int? pageSize;
+
+  const SearchBarWidget({
+    super.key,
+    this.pageSize,
+  });
 
   @override
   State<SearchBarWidget> createState() => _SearchBarWidgetState();
@@ -113,20 +118,29 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
     // Debounce search
     Future.delayed(const Duration(milliseconds: 500), () {
       if (_searchController.text == value && mounted) {
-        context.read<BooksViewModel>().performSearch(value);
+        context.read<BooksViewModel>().performSearch(
+          value,
+          pageSize: widget.pageSize,
+        );
       }
     });
   }
 
   void _onSearchSubmitted(String value) {
-    context.read<BooksViewModel>().performSearch(value);
+    context.read<BooksViewModel>().performSearch(
+      value,
+      pageSize: widget.pageSize,
+    );
     _searchFocusNode.unfocus();
   }
 
   void _clearSearch() {
     _searchController.clear();
     setState(() {});
-    context.read<BooksViewModel>().performSearch('');
+    context.read<BooksViewModel>().performSearch(
+      '',
+      pageSize: widget.pageSize,
+    );
     _searchFocusNode.unfocus();
   }
 }

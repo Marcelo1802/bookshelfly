@@ -14,6 +14,18 @@ class BookPage {
   });
 }
 
+class BookPageChunk {
+  final List<BookPage> pages;
+  final int nextStartIndex;
+  final bool hasMorePages;
+
+  const BookPageChunk({
+    required this.pages,
+    required this.nextStartIndex,
+    required this.hasMorePages,
+  });
+}
+
 class BookPaginator {
   static List<BookPage> paginateText(
     String text,
@@ -24,74 +36,81 @@ class BookPaginator {
     double verticalPadding = 32.0,
   }) {
     final List<BookPage> pages = [];
-    
-    // Usar configurações fixas para garantir número consistente de páginas
-    const double baseFontSize = 18.0;
-    const double baseLineHeight = 1.5;
-    
-    // Obter dimensões da tela
-    final screenSize = MediaQuery.of(context).size;
-    final availableWidth = screenSize.width - horizontalPadding;
-    final availableHeight = screenSize.height - verticalPadding - kToolbarHeight - MediaQuery.of(context).padding.top - MediaQuery.of(context).padding.bottom;
-    
-    // Calcular caracteres por linha e linhas por página usando configurações base
-    final charactersPerLine = (availableWidth / (baseFontSize * 0.6)).round();
-    final linesPerPage = (availableHeight / (baseFontSize * baseLineHeight)).round();
-    final charactersPerPage = charactersPerLine * linesPerPage;
-    
-    // Dividir o texto em páginas
     int currentIndex = 0;
     int pageNumber = 1;
-    
+
     while (currentIndex < text.length) {
-      int endIndex = currentIndex + charactersPerPage;
-      
-      // Se não é a última página, tentar quebrar após um ponto final
-      if (endIndex < text.length) {
-        // Procurar pelo último ponto final antes do limite
-        int lastPeriodIndex = text.lastIndexOf('.', endIndex);
-        
-        // Se encontrou um ponto final, usar ele
-        if (lastPeriodIndex > currentIndex) {
-          endIndex = lastPeriodIndex + 1; // Incluir o ponto final
-        } else {
-          // Se não encontrou ponto final, procurar por outros sinais de pontuação
-          int lastPunctuationIndex = _findLastPunctuation(text, endIndex);
-          if (lastPunctuationIndex > currentIndex) {
-            endIndex = lastPunctuationIndex + 1;
-          } else {
-            // Como último recurso, quebrar em uma palavra completa
-            int lastSpaceIndex = text.lastIndexOf(' ', endIndex);
-            if (lastSpaceIndex > currentIndex) {
-              endIndex = lastSpaceIndex;
-            }
-          }
-        }
-      } else {
-        endIndex = text.length;
+      final chunk = paginateChunk(
+        text,
+        context,
+        startIndex: currentIndex,
+        startPageNumber: pageNumber,
+        fontSize: fontSize,
+        lineHeight: lineHeight,
+        horizontalPadding: horizontalPadding,
+        verticalPadding: verticalPadding,
+      );
+
+      pages.addAll(chunk.pages);
+      currentIndex = chunk.nextStartIndex;
+      pageNumber += chunk.pages.length;
+
+      if (!chunk.hasMorePages) {
+        break;
       }
-      
-      final pageContent = text.substring(currentIndex, endIndex).trim();
-      
-      if (pageContent.isNotEmpty) {
-        pages.add(BookPage(
-          pageNumber: pageNumber,
-          content: pageContent,
-          startIndex: currentIndex,
-          endIndex: endIndex,
-        ));
-        pageNumber++;
+    }
+
+    return pages;
+  }
+
+  static BookPageChunk paginateChunk(
+    String text,
+    BuildContext context, {
+    int startIndex = 0,
+    int startPageNumber = 1,
+    int maxPages = 20,
+    double fontSize = 18.0,
+    double lineHeight = 1.5,
+    double horizontalPadding = 32.0,
+    double verticalPadding = 32.0,
+  }) {
+    final List<BookPage> pages = [];
+    final metrics = _calculatePageMetrics(
+      context,
+      horizontalPadding: horizontalPadding,
+      verticalPadding: verticalPadding,
+    );
+    final charactersPerPage = metrics.$1;
+
+    int currentIndex = startIndex;
+    int pageNumber = startPageNumber;
+
+    while (currentIndex < text.length && pages.length < maxPages) {
+      final nextPage = _buildNextPage(
+        text,
+        currentIndex,
+        pageNumber,
+        charactersPerPage,
+      );
+
+      if (nextPage == null) {
+        break;
       }
-      
-      currentIndex = endIndex;
-      
-      // Pular espaços em branco
+
+      pages.add(nextPage);
+      pageNumber++;
+      currentIndex = nextPage.endIndex;
+
       while (currentIndex < text.length && text[currentIndex] == ' ') {
         currentIndex++;
       }
     }
-    
-    return pages;
+
+    return BookPageChunk(
+      pages: pages,
+      nextStartIndex: currentIndex,
+      hasMorePages: currentIndex < text.length,
+    );
   }
   
   // Método auxiliar para encontrar a última pontuação antes de um índice
@@ -136,5 +155,70 @@ class BookPaginator {
       verticalPadding: verticalPadding,
     );
     return pages.length;
+  }
+
+  static (int, int, int) _calculatePageMetrics(
+    BuildContext context, {
+    double horizontalPadding = 32.0,
+    double verticalPadding = 32.0,
+  }) {
+    const double baseFontSize = 18.0;
+    const double baseLineHeight = 1.5;
+
+    final screenSize = MediaQuery.of(context).size;
+    final mediaQuery = MediaQuery.of(context);
+    final availableWidth = screenSize.width - horizontalPadding;
+    final availableHeight = screenSize.height -
+        verticalPadding -
+        kToolbarHeight -
+        mediaQuery.padding.top -
+        mediaQuery.padding.bottom;
+
+    final charactersPerLine = (availableWidth / (baseFontSize * 0.6)).round();
+    final linesPerPage = (availableHeight / (baseFontSize * baseLineHeight)).round();
+    final charactersPerPage = charactersPerLine * linesPerPage;
+
+    return (charactersPerPage, charactersPerLine, linesPerPage);
+  }
+
+  static BookPage? _buildNextPage(
+    String text,
+    int currentIndex,
+    int pageNumber,
+    int charactersPerPage,
+  ) {
+    int endIndex = currentIndex + charactersPerPage;
+
+    if (endIndex < text.length) {
+      final lastPeriodIndex = text.lastIndexOf('.', endIndex);
+
+      if (lastPeriodIndex > currentIndex) {
+        endIndex = lastPeriodIndex + 1;
+      } else {
+        final lastPunctuationIndex = _findLastPunctuation(text, endIndex);
+        if (lastPunctuationIndex > currentIndex) {
+          endIndex = lastPunctuationIndex + 1;
+        } else {
+          final lastSpaceIndex = text.lastIndexOf(' ', endIndex);
+          if (lastSpaceIndex > currentIndex) {
+            endIndex = lastSpaceIndex;
+          }
+        }
+      }
+    } else {
+      endIndex = text.length;
+    }
+
+    final pageContent = text.substring(currentIndex, endIndex).trim();
+    if (pageContent.isEmpty) {
+      return null;
+    }
+
+    return BookPage(
+      pageNumber: pageNumber,
+      content: pageContent,
+      startIndex: currentIndex,
+      endIndex: endIndex,
+    );
   }
 }
