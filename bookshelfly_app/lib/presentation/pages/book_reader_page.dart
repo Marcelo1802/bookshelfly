@@ -23,7 +23,7 @@ class BookReaderPage extends StatefulWidget {
 }
 
 class _BookReaderPageState extends State<BookReaderPage> {
-  static const int _pagesPerBatch = 20;
+  static const int _pagesPerBatch = 10;
 
   final PageController _pageController = PageController();
   String _content = '';
@@ -93,7 +93,6 @@ class _BookReaderPageState extends State<BookReaderPage> {
           setState(() {
             _isLoading = false;
           });
-          _scheduleBackgroundPagination();
         },
       );
     } catch (e) {
@@ -175,7 +174,9 @@ class _BookReaderPageState extends State<BookReaderPage> {
       return false;
     }
 
-    _isPaginatingMore = true;
+    setState(() {
+      _isPaginatingMore = true;
+    });
 
     try {
       final chunk = BookPaginator.paginateChunk(
@@ -210,23 +211,14 @@ class _BookReaderPageState extends State<BookReaderPage> {
 
       return true;
     } finally {
-      _isPaginatingMore = false;
+      if (mounted) {
+        setState(() {
+          _isPaginatingMore = false;
+        });
+      } else {
+        _isPaginatingMore = false;
+      }
     }
-  }
-
-  void _scheduleBackgroundPagination() {
-    unawaited(
-      Future<void>(() async {
-        while (mounted && !_isPaginationComplete) {
-          final appended = await _appendNextPageBatch();
-          if (!appended) {
-            break;
-          }
-
-          await Future<void>.delayed(Duration.zero);
-        }
-      }),
-    );
   }
 
   Future<void> _loadReadingProgress() async {
@@ -269,6 +261,10 @@ class _BookReaderPageState extends State<BookReaderPage> {
       _currentPage = page;
     });
     _saveReadingProgress();
+
+    if (page == _pages.length - 1 && !_isPaginationComplete && !_isPaginatingMore) {
+      unawaited(_appendNextPageBatch());
+    }
   }
 
   void _goToNextPage() {
@@ -322,9 +318,9 @@ class _BookReaderPageState extends State<BookReaderPage> {
                   fontWeight: FontWeight.normal,
                 ),
               ),
-            if (!_isPaginationComplete)
+            if (_isPaginatingMore)
               const Text(
-                'Carregando mais páginas...',
+                'Carregando próximas 10 páginas...',
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.normal,
@@ -879,28 +875,21 @@ class _BookReaderPageState extends State<BookReaderPage> {
     }
 
     if (!_isPaginationComplete && targetPage >= _pages.length) {
-      final pageLoaded = await _ensurePageLoaded(targetPage);
-      if (!mounted) {
-        return;
-      }
-
-      if (!pageLoaded) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text(
-              'Ainda estamos preparando mais páginas. Tente novamente em instantes.',
-              style: TextStyle(color: AppColors.white),
-            ),
-            backgroundColor: AppColors.error,
-            duration: const Duration(seconds: 2),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'As próximas 10 páginas carregam quando você chega ao fim do bloco atual.',
+            style: TextStyle(color: AppColors.white),
           ),
-        );
-        return;
-      }
+          backgroundColor: AppColors.error,
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+      );
+      return;
     }
 
     Navigator.of(context).pop();
@@ -1007,21 +996,10 @@ class _BookReaderPageState extends State<BookReaderPage> {
       return false;
     }
 
-    if (_currentPage < _pages.length - 1) {
-      return true;
-    }
-
-    return !_isPaginationComplete;
+    return _currentPage < _pages.length - 1;
   }
 
   Future<void> _navigateForward() async {
-    if (_currentPage >= _pages.length - 1 && !_isPaginationComplete) {
-      final appended = await _appendNextPageBatch();
-      if (!mounted || !appended) {
-        return;
-      }
-    }
-
     if (_pageController.hasClients && _currentPage < _pages.length - 1) {
       await _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
